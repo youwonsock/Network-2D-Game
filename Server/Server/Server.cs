@@ -13,7 +13,10 @@ namespace Server
 
         static void Main(string[] args)
         {
+            Thread.Sleep(1000);
             Console.WriteLine("Server\n\n");
+
+            PacketManager.Instance.Register();
 
             // DNS (Domain Name System)
             string host = Dns.GetHostName(); // 현재 컴퓨터의 호스트 이름을 가져옴

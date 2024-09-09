@@ -12,6 +12,7 @@ namespace ServerCore
         Func<Session> sessionFactory;
 
 
+
         public void Init(IPEndPoint endPoint, Func<Session> sessionFactory)
         {
             this.sessionFactory += sessionFactory;

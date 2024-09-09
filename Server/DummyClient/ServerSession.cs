@@ -1,85 +1,36 @@
 ﻿using ServerCore;
+using System.Collections.Specialized;
 using System.Net;
 using System.Text;
 
 namespace DummyClient
 {
-    // 기본 패킷
-    class Packet
-    {
-        public ushort size;
-        public ushort packetID;
-    }
-
-    class PlayerInfoReq : Packet
-    {
-        public long playerId;
-    }
-
-    class PlayerInfoAck : Packet
-    {
-        public int hp;
-        public int attack;
-    }
-
-    // 패킷 구분을 위한 enum
-    public enum PacketID
-    {
-        PlayerInfoReq = 1,
-        PlayerInfoOk
-    }
-
-
-
     /// <summary>
     /// 서버와 연결 시 수행할 작업을 정의하는 클래스
     /// </summary>
     public class ServerSession : Session
     {
-        // unsafe : 포인터 사용을 위해 빌드 속성 변경
-        static unsafe void ToBytes(byte[] array, int offset, ulong value)
-        {   
-            // fixed : unsafe 컨텍스트에서만 허용되는 키워드로
-            // 해당 블록 내부의 변수 및 객체를 가비지 컬렉터의 관리 대상에서 제외시킴
-            fixed (byte* ptr = &array[offset])
-            {
-                *(ulong*)ptr = value;
-            }
-        }
-
-        static unsafe void ToBytes<T>(byte[] array, int offset, T value) where T : unmanaged
-        {
-            fixed (byte* ptr = &array[offset])
-            {
-                *(T*)ptr = value;
-            }
-        }
-
         public override void OnConnected(EndPoint endPoint)
         {
             Console.WriteLine($"OnConnected : {endPoint}");
 
-            // 패킷 생성
-            PlayerInfoReq packet = new PlayerInfoReq() { size = 4, packetID = (ushort)PacketID.PlayerInfoReq, playerId = 1001 };
+            // test용 패킷 생성
+            C_PlayerInfoReq packet = new C_PlayerInfoReq() { playerId = 1001, name = "ABCD" };
 
-            for(int i = 0; i < 5; ++i)
+            // test용 스킬 생성
+            var skill = new C_PlayerInfoReq.Skill() { id = 101, level = 1, duration = 3.0f };
+            skill.attributes.Add(new C_PlayerInfoReq.Skill.Attribute() { att = 77 });
+            packet.skills.Add(skill);
+
+            packet.skills.Add(new C_PlayerInfoReq.Skill() { id = 201, level = 2, duration = 4.0f });
+            packet.skills.Add(new C_PlayerInfoReq.Skill() { id = 301, level = 3, duration = 5.0f });
+            packet.skills.Add(new C_PlayerInfoReq.Skill() { id = 401, level = 4, duration = 6.0f });
+
+            // 패킷 전송
             {
-                ArraySegment<byte> openSegment = SendBufferHelper.Open(4096);
-
-                ushort size = 0;
-                bool success = true;
-
-                size += 2;
-                success &= BitConverter.TryWriteBytes(new Span<byte>(openSegment.Array, openSegment.Offset + size, openSegment.Count - size), packet.packetID);
-                size += 2;
-                success &= BitConverter.TryWriteBytes(new Span<byte>(openSegment.Array, openSegment.Offset + size, openSegment.Count - size), packet.playerId);
-                size += 8;
-                success &= BitConverter.TryWriteBytes(new Span<byte>(openSegment.Array, openSegment.Offset, openSegment.Count), size);
-
-                ArraySegment<byte> sendBuff = SendBufferHelper.Close(size);
-
-                if (success)
-                    Send(sendBuff);
+                ArraySegment<byte> s = packet.Write();
+                if (s != null)
+                    Send(s);
             }
         }
 
