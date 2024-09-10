@@ -17,13 +17,13 @@ namespace DummyClient
             IPEndPoint endPoint = new IPEndPoint(ipAddress, 7777);
 
             Connector connector = new Connector();
-            connector.Connect(endPoint, () => { return new ServerSession(); });
+            connector.Connect(endPoint, () => { return SessionManager.Instance.Generate(); }, 500);
 
             while (true)
             {
+                SessionManager.Instance.SendForEach();
 
-
-                Thread.Sleep(1000);
+                Thread.Sleep(250);
             }
         }
     }

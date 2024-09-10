@@ -11,10 +11,15 @@ namespace ServerCore
     {
         public static readonly int HeaderSize = 2;
 
+
+
         // [size(2)][packetId(2)][...][size(2)][packetId(2)][...]
         public sealed override int OnRecv(ArraySegment<byte> buffer)
         {
             int processLen = 0;
+
+            // for test
+            int packetCount = 0;
 
             while(true)
             {
@@ -27,9 +32,14 @@ namespace ServerCore
 
                 OnRecvPacket(new ArraySegment<byte>(buffer.Array, buffer.Offset, dataSize));
 
+                ++packetCount;
+
                 processLen += dataSize;
                 buffer = new ArraySegment<byte>(buffer.Array, buffer.Offset + dataSize, buffer.Count - dataSize);
             }
+
+            if (packetCount > 1)
+                Console.WriteLine($"패킷 처리 개수 : {packetCount}");
 
             return processLen;
         }
@@ -53,7 +63,7 @@ namespace ServerCore
         Queue<ArraySegment<byte>> sendQueue = new Queue<ArraySegment<byte>>(); // 멀티 스레드 환경에서 Send() 호출 시 큐에 데이터를 넣어놓고 데이터를 꺼내어 전송하도록 함
         List<ArraySegment<byte>> sendBuffList = new List<ArraySegment<byte>>();
 
-        RecvBuffer recvBuffer = new RecvBuffer(1024);
+        RecvBuffer recvBuffer = new RecvBuffer(65535);
 
 
 
@@ -85,6 +95,21 @@ namespace ServerCore
             }
         }
 
+        public void Send(List<ArraySegment<byte>> sendBuffList)
+        {
+            if (sendBuffList.Count == 0)
+                return;
+
+            lock (lockObj)
+            {
+                foreach (ArraySegment<byte> sendBuff in sendBuffList)
+                    sendQueue.Enqueue(sendBuff);
+
+                if (sendBuffList.Count > 0)
+                    RegisterSend();
+            }
+        }
+
         public void Disconnect()
         {
             if (Interlocked.Exchange(ref disconnected, 1) == 1) // 중복으로 Disconnect() 호출되는 것 방지
@@ -95,12 +120,24 @@ namespace ServerCore
             socket.Close();
         }
 
+        private void Clear()
+        {
+            lock (lockObj)
+            {
+                sendQueue.Clear();
+                sendBuffList.Clear();
+            }
+        }
+
 
 
         #region 네트워크 통신
 
         private void RegisterSend()
         {
+            if (disconnected == 1)
+                return;
+
             while (sendQueue.Count > 0)
             {
                 ArraySegment<byte> buff = sendQueue.Dequeue();
@@ -108,10 +145,18 @@ namespace ServerCore
             }
             sendArgs.BufferList = sendBuffList;
 
-            bool pending = socket.SendAsync(sendArgs);
-            if (pending == false)
-                OnSendCompleted(null, sendArgs);
+            try
+            {
+                bool pending = socket.SendAsync(sendArgs);
+                if (pending == false)
+                    OnSendCompleted(null, sendArgs);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"RegisterSend Failed {e}");
+            }
         }
+
 
         private void OnSendCompleted(object sender, SocketAsyncEventArgs args)
         {
@@ -143,14 +188,24 @@ namespace ServerCore
 
         private void RegisterReceive()
         {
+            if(disconnected == 1)
+                return;
+
             recvBuffer.Clean(); // 이전에 남아있던 데이터를 지움
             ArraySegment<byte> segment = recvBuffer.WriteSegment;
             recvArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
 
-            bool pending = socket.ReceiveAsync(recvArgs);
-            
-            if (pending == false)
-                OnReceiveCompleted(null, recvArgs);
+            try
+            {
+                bool pending = socket.ReceiveAsync(recvArgs);
+
+                if (pending == false)
+                    OnReceiveCompleted(null, recvArgs);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"RegisterReceive Failed {e}");
+            }
         }
 
         private void OnReceiveCompleted(object sender, SocketAsyncEventArgs args)

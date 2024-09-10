@@ -9,21 +9,26 @@ namespace ServerCore
     public class Listener
     {
         Socket listenSocket;
-        Func<Session> sessionFactory;
+        Func<PacketSession> sessionFactory;
 
 
 
-        public void Init(IPEndPoint endPoint, Func<Session> sessionFactory)
+        public void Init(IPEndPoint endPoint, Func<PacketSession> sessionFactory, int register = 10, int backlog = 100)
         {
             this.sessionFactory += sessionFactory;
 
             listenSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             listenSocket.Bind(endPoint);
-            listenSocket.Listen(10);
 
-            SocketAsyncEventArgs args = new SocketAsyncEventArgs();   
-            args.Completed += new EventHandler<SocketAsyncEventArgs>(OnAcceptCompleted); // .AcceptAsync() 호출 후 Accept 작업이 완료되면 호출될 콜백 메서드 지정
-            RegisterAccept(args);
+            // backlog : 최대 대기 수
+            listenSocket.Listen(backlog);
+
+            for (int i = 0; i < register; i++)
+            {
+                SocketAsyncEventArgs args = new SocketAsyncEventArgs();
+                args.Completed += new EventHandler<SocketAsyncEventArgs>(OnAcceptCompleted); // .AcceptAsync() 호출 후 Accept 작업이 완료되면 호출될 콜백 메서드 지정
+                RegisterAccept(args);
+            }
         }
 
         private void RegisterAccept(SocketAsyncEventArgs args)
@@ -40,7 +45,7 @@ namespace ServerCore
         {
             if(args.SocketError == SocketError.Success) // Accept 완료
             {
-                Session session = sessionFactory.Invoke();
+                PacketSession session = sessionFactory.Invoke();
 
                 session.Start(args.AcceptSocket);
                 session.OnConnected(args.AcceptSocket.RemoteEndPoint);

@@ -8,22 +8,25 @@ namespace ServerCore
     /// </summary>
     public class Connector
     {
-        Func<Session> sessionFactory;
+        Func<PacketSession> sessionFactory;
 
 
 
-        public void Connect(IPEndPoint endPoint, Func<Session> sessionFactory)
+        public void Connect(IPEndPoint endPoint, Func<PacketSession> sessionFactory, int count)
         {
-            this.sessionFactory = sessionFactory;
+            for(int i = 0; i < count; i++)
+            {
+                this.sessionFactory = sessionFactory;
 
-            Socket socket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                Socket socket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
-            SocketAsyncEventArgs args = new SocketAsyncEventArgs();
-            args.Completed += OnConnectCompleted;
-            args.RemoteEndPoint = endPoint;
-            args.UserToken = socket;
+                SocketAsyncEventArgs args = new SocketAsyncEventArgs();
+                args.Completed += OnConnectCompleted;
+                args.RemoteEndPoint = endPoint;
+                args.UserToken = socket;
 
-            RegisterConnect(args);
+                RegisterConnect(args);
+            }
         }
 
         private void RegisterConnect(SocketAsyncEventArgs args)
@@ -41,7 +44,7 @@ namespace ServerCore
         {
             if(args.SocketError == SocketError.Success)
             {
-                Session session = sessionFactory.Invoke();
+                PacketSession session = sessionFactory.Invoke();
 
                 session.Start(args.ConnectSocket);
                 session.OnConnected(args.RemoteEndPoint);

@@ -10,13 +10,12 @@ namespace Server
     class Server
     {
         static Listener _listener = new Listener();
+        public static GameRoom Room = new GameRoom();
 
         static void Main(string[] args)
         {
             Thread.Sleep(1000);
             Console.WriteLine("Server\n\n");
-
-            PacketManager.Instance.Register();
 
             // DNS (Domain Name System)
             string host = Dns.GetHostName(); // 현재 컴퓨터의 호스트 이름을 가져옴
@@ -24,13 +23,21 @@ namespace Server
             IPAddress ipAddress = ipHost.AddressList[0]; // 첫 번째 IP 주소를 사용
             IPEndPoint endPoint = new IPEndPoint(ipAddress, 7777); // 서버의 주소와 포트 번호를 설정
 
-            _listener.Init(endPoint, () => { return new ClientSession(); });
+            _listener.Init(endPoint, () => { return SessionManager.Instance.Generate(); });
             Console.WriteLine("Listening...");
 
-            while (true) // 종료 방지
-            {
+            FlushRoom();
 
+            while (true)
+            {
+                JobTimer.Instance.Flush();
             }
+        }
+
+        static void FlushRoom()
+        {
+            Room.Push(() => Room.Flush());
+            JobTimer.Instance.Push(FlushRoom, 250);
         }
     }
 }
