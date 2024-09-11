@@ -18,7 +18,11 @@ namespace Server
         PriorityQueue<JobTimerElem> heap = new PriorityQueue<JobTimerElem>();
         object lockObj = new object();
 
+
+
         public static JobTimer Instance { get; } = new JobTimer();
+
+
 
         public void Push(Action action, int tickAfter = 0)
         {

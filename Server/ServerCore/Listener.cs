@@ -33,7 +33,7 @@ namespace ServerCore
 
         private void RegisterAccept(SocketAsyncEventArgs args)
         {
-            args.AcceptSocket = null;   // 재사용을 위해 null로 초기화
+            args.AcceptSocket = null;
 
             bool pending = listenSocket.AcceptAsync(args);  // 비동기 Accept 요청
 

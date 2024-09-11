@@ -11,6 +11,12 @@ namespace Server
         public int SessionId { get; set; }
         public GameRoom Room { get; set; }
 
+        public float PosX { get; set; }
+        public float PosY { get; set; }
+        public float PosZ { get; set; }
+
+
+
         public override void OnConnected(EndPoint endPoint)
         {
             Console.WriteLine($"OnConnected : {endPoint}");
@@ -34,7 +40,7 @@ namespace Server
 
         public override void OnSend(int numOfBytes)
         {
-            Console.WriteLine($"Transferred bytes: {numOfBytes}");
+            //Console.WriteLine($"Transferred bytes: {numOfBytes}");
         }
 
         public override void OnRecvPacket(ArraySegment<byte> buffer)

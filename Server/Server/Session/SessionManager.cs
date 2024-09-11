@@ -6,9 +6,13 @@ namespace Server
         static SessionManager session = new SessionManager();
         public static SessionManager Instance { get { return session; } }
 
+
+
         int sessionId = 0;
         Dictionary<int, ClientSession> sessions = new Dictionary<int, ClientSession>();
         object lockObj = new object();
+
+
 
         public ClientSession Generate()
         {

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace DummyClient
 {
     class SessionManager
@@ -13,6 +8,7 @@ namespace DummyClient
 
         List<ServerSession> sessions = new List<ServerSession>();
         object lockObj = new object();
+        Random rand = new Random();
 
         public ServerSession Generate()
         {
@@ -30,12 +26,12 @@ namespace DummyClient
             {
                 foreach (ServerSession s in sessions)
                 {
-                    C_Chat chatPacket = new C_Chat();
-                    chatPacket.chat = "Hello Server !";
+                    C_Move movePacket = new C_Move();
+                    movePacket.posX = rand.Next(-50, 50);
+                    movePacket.posY = 0;
+                    movePacket.posZ = rand.Next(-50, 50);
 
-                    ArraySegment<byte> segment = chatPacket.Write();
-
-                    s.Send(segment);
+                    s.Send(movePacket.Write());
                 }
             }
         }

@@ -8,7 +8,6 @@ namespace DummyClient
     {
         static void Main(string[] args)
         {
-            Thread.Sleep(1000);
             Console.WriteLine("Client\n\n");
 
             string host = Dns.GetHostName();

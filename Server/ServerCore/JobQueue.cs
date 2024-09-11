@@ -33,7 +33,7 @@ namespace ServerCore
                 Flush();
         }
 
-        Action Pop()
+        private Action Pop()
         {
             lock (lockObj)
             {
@@ -47,7 +47,7 @@ namespace ServerCore
             }
         }
 
-        void Flush()
+        private void Flush()
         {
             while (true)
             {

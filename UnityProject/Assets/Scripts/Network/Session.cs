@@ -1,5 +1,8 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace ServerCore
 {
@@ -17,13 +20,13 @@ namespace ServerCore
         {
             int processLen = 0;
 
-            while(true)
+            while (true)
             {
                 if (buffer.Count < HeaderSize) // 최소한 헤더는 파싱할 수 있어야 함
                     break;
 
                 ushort dataSize = BitConverter.ToUInt16(buffer.Array, buffer.Offset); // 패킷 길이 읽기
-                if(buffer.Count < dataSize) // 버퍼에 데이터가 부족하면 루프 탈출
+                if (buffer.Count < dataSize) // 버퍼에 데이터가 부족하면 루프 탈출
                     break;
 
                 OnRecvPacket(new ArraySegment<byte>(buffer.Array, buffer.Offset, dataSize));
@@ -68,10 +71,10 @@ namespace ServerCore
         public void Start(Socket socket)
         {
             this.socket = socket;
-            
+
             recvArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnReceiveCompleted);
             sendArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnSendCompleted);
-            
+
             RegisterReceive();
         }
 
@@ -179,7 +182,7 @@ namespace ServerCore
 
         private void RegisterReceive()
         {
-            if(disconnected == 1)
+            if (disconnected == 1)
                 return;
 
             recvBuffer.Clean(); // 이전에 남아있던 데이터를 지움
@@ -201,7 +204,7 @@ namespace ServerCore
 
         private void OnReceiveCompleted(object sender, SocketAsyncEventArgs args)
         {
-            if(args.BytesTransferred > 0 && args.SocketError == SocketError.Success)
+            if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success)
             {
                 try
                 {
@@ -213,7 +216,7 @@ namespace ServerCore
                     }
 
                     int processLen = OnRecv(recvBuffer.ReadSegment);
-                    if(processLen < 0 || recvBuffer.DataSize < processLen) // 처리한 데이터가 없거나 데이터가 부족할 경우
+                    if (processLen < 0 || recvBuffer.DataSize < processLen) // 처리한 데이터가 없거나 데이터가 부족할 경우
                     {
                         Disconnect();
                         return;

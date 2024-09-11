@@ -14,7 +14,6 @@ namespace Server
 
         static void Main(string[] args)
         {
-            Thread.Sleep(1000);
             Console.WriteLine("Server\n\n");
 
             // DNS (Domain Name System)
@@ -26,7 +25,7 @@ namespace Server
             _listener.Init(endPoint, () => { return SessionManager.Instance.Generate(); });
             Console.WriteLine("Listening...");
 
-            FlushRoom();
+            JobTimer.Instance.Push(FlushRoom);
 
             while (true)
             {
