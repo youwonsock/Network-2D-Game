@@ -1,63 +1,60 @@
-﻿using ServerCore;
+﻿using System;
+using ServerCore;
 
 namespace Server
 {
-    struct JobTimerElem : IComparable<JobTimerElem>
-    {
-        public int execTime; // 지연 시간
-        public Action action;
+	struct JobTimerElem : IComparable<JobTimerElem>
+	{
+		public int execTick; // 실행 시간
+		public Action action;
 
-        public int CompareTo(JobTimerElem other)
-        {
-            return other.execTime - execTime;
-        }
-    }
+		public int CompareTo(JobTimerElem other)
+		{
+			return other.execTick - execTick;
+		}
+	}
 
-    class JobTimer
-    {
-        PriorityQueue<JobTimerElem> heap = new PriorityQueue<JobTimerElem>();
-        object lockObj = new object();
+	class JobTimer
+	{
+		PriorityQueue<JobTimerElem> _pq = new PriorityQueue<JobTimerElem>();
+		object _lock = new object();
 
+		public static JobTimer Instance { get; } = new JobTimer();
 
+		public void Push(Action action, int tickAfter = 0)
+		{
+			JobTimerElem job;
+			job.execTick = System.Environment.TickCount + tickAfter;
+			job.action = action;
 
-        public static JobTimer Instance { get; } = new JobTimer();
+			lock (_lock)
+			{
+				_pq.Push(job);
+			}
+		}
 
+		public void Flush()
+		{
+			while (true)
+			{
+				int now = System.Environment.TickCount;
 
+				JobTimerElem job;
 
-        public void Push(Action action, int tickAfter = 0)
-        {
-            JobTimerElem elem = new JobTimerElem();
-            elem.execTime = System.Environment.TickCount + tickAfter;
-            elem.action = action;
+				lock (_lock)
+				{
+					if (_pq.Count == 0)
+						break;
 
-            lock (lockObj)
-            {
-                heap.Push(elem);
-            }
-        }
+					job = _pq.Peek();
+					if (job.execTick > now)
+						break;
 
-        public void Flush()
-        {
-            while (true)
-            {
-                int now = System.Environment.TickCount;
+					_pq.Pop();
+				}
 
-                JobTimerElem job;
-
-                lock (lockObj)
-                {
-                    if (heap.Count == 0)
-                        break;
-
-                    job = heap.Peek();
-                    if (job.execTime > now)
-                        break;
-
-                    heap.Pop();
-                }
-
-                job.action.Invoke();
-            }
-        }
-    }
+				job.action.Invoke();
+			}
+		}
+	}
 }
