@@ -1,37 +1,16 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class GameScene : BaseScene
+public class GameScene : MonoBehaviour
 {
-    protected override void Init()
+    public void Awake()
     {
-        base.Init();
-
-        SceneType = Define.Scene.Game;
+        Object obj = GameObject.FindObjectOfType(typeof(EventSystem));
+        if (obj == null)
+            Managers.Resource.Instantiate("UI/EventSystem").name = "@EventSystem";
 
         Managers.Map.LoadMap(1);
 
         Screen.SetResolution(640, 480, false);
-
-        //GameObject player = Managers.Resource.Instantiate("Creature/Player");
-        //player.name = "Player";
-        //Managers.Object.Add(player);
-        
-
-        //Managers.UI.ShowSceneUI<UI_Inven>();
-        //Dictionary<int, Data.Stat> dict = Managers.Data.StatDict;
-        //gameObject.GetOrAddComponent<CursorController>();
-
-        //GameObject player = Managers.Game.Spawn(Define.WorldObject.Player, "UnityChan");
-        //Camera.main.gameObject.GetOrAddComponent<CameraController>().SetPlayer(player);
-
-        ////Managers.Game.Spawn(Define.WorldObject.Monster, "Knight");
-        //GameObject go = new GameObject { name = "SpawningPool" };
-        //SpawningPool pool = go.GetOrAddComponent<SpawningPool>();
-        //pool.SetKeepMonsterCount(2);
-    }
-
-    public override void Clear()
-    {
-        
     }
 }
