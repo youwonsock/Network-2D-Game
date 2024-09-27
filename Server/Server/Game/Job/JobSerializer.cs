@@ -6,10 +6,11 @@ namespace Server.Game
 {
 	public class JobSerializer
 	{
-		JobTimer _timer = new JobTimer();
-		Queue<IJob> _jobQueue = new Queue<IJob>();
-		object _lock = new object();
-		bool _flush = false;
+		JobTimer jobTimer = new JobTimer();
+		Queue<IJob> jobQueue = new Queue<IJob>();
+		object lockObj = new object();
+		
+
 
 		public void PushAfter(int tickAfter, Action action) { PushAfter(tickAfter, new Job(action)); }
 		public void PushAfter<T1>(int tickAfter, Action<T1> action, T1 t1) { PushAfter(tickAfter, new Job<T1>(action, t1)); }
@@ -18,7 +19,7 @@ namespace Server.Game
 
 		public void PushAfter(int tickAfter, IJob job)
 		{
-			_timer.Push(job, tickAfter);
+			jobTimer.Push(job, tickAfter);
 		}
 
 		public void Push(Action action) { Push(new Job(action)); }
@@ -28,15 +29,17 @@ namespace Server.Game
 
 		public void Push(IJob job)
 		{
-			lock (_lock)
+			lock (lockObj)
 			{
-				_jobQueue.Enqueue(job);
+				jobQueue.Enqueue(job);
 			}
 		}
 
+
+
 		public void Flush()
 		{
-			_timer.Flush();
+			jobTimer.Flush();
 
 			while (true)
 			{
@@ -50,14 +53,12 @@ namespace Server.Game
 
 		IJob Pop()
 		{
-			lock (_lock)
+			lock (lockObj)
 			{
-				if (_jobQueue.Count == 0)
-				{
-					_flush = false;
+				if (jobQueue.Count == 0)
 					return null;
-				}
-				return _jobQueue.Dequeue();
+
+				return jobQueue.Dequeue();
 			}
 		}
 	}

@@ -1,8 +1,6 @@
 ﻿using Google.Protobuf.Protocol;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Server.Data
 {
@@ -15,6 +13,8 @@ namespace Server.Data
 	{
 		public static Dictionary<int, StatInfo> StatDict { get; private set; } = new Dictionary<int, StatInfo>();
 		public static Dictionary<int, Data.Skill> SkillDict { get; private set; } = new Dictionary<int, Data.Skill>();
+
+
 
 		public static void LoadData()
 		{
