@@ -5,24 +5,25 @@ namespace Server
 {
 	class SessionManager
 	{
-		static SessionManager _session = new SessionManager();
-		public static SessionManager Instance { get { return _session; } }
+		static SessionManager session = new SessionManager();
+		public static SessionManager Instance { get { return session; } }
 
-		int _sessionId = 0;
-		Dictionary<int, ClientSession> _sessions = new Dictionary<int, ClientSession>();
-		object _lock = new object();
+		int sessionId = 0;
+		Dictionary<int, ClientSession> sessions = new Dictionary<int, ClientSession>();
+		object lockObj = new object();
+
+
 
 		public ClientSession Generate()
 		{
-			lock (_lock)
+			lock (lockObj)
 			{
-				int sessionId = ++_sessionId;
+				int sessionId = ++(this.sessionId);
 
+				//새로은 세션 생성 및 아이디 부여
 				ClientSession session = new ClientSession();
 				session.SessionId = sessionId;
-				_sessions.Add(sessionId, session);
-
-				Console.WriteLine($"Connected : {sessionId}");
+				sessions.Add(sessionId, session);
 
 				return session;
 			}
@@ -30,19 +31,19 @@ namespace Server
 
 		public ClientSession Find(int id)
 		{
-			lock (_lock)
+			lock (lockObj)
 			{
 				ClientSession session = null;
-				_sessions.TryGetValue(id, out session);
+				sessions.TryGetValue(id, out session);
 				return session;
 			}
 		}
 
 		public void Remove(ClientSession session)
 		{
-			lock (_lock)
+			lock (lockObj)
 			{
-				_sessions.Remove(session.SessionId);
+				sessions.Remove(session.SessionId);
 			}
 		}
 	}

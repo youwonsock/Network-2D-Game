@@ -68,6 +68,8 @@ namespace Server.Game
 		bool[,] _collision;
 		GameObject[,] _objects;
 
+
+
 		public bool CanGo(Vector2Int cellPos, bool checkObjects = true)
 		{
 			if (cellPos.x < MinX || cellPos.x > MaxX)
@@ -115,27 +117,24 @@ namespace Server.Game
 			return true;
 		}
 
-		/// <summary>
-		/// 플레이어가 이동가능한지 검사
-		/// </summary>
-		/// <param name="gameObject"></param>
-		/// <param name="dest"></param>
-		/// <returns></returns>
 		public bool ApplyMove(GameObject gameObject, Vector2Int dest)
 		{
-			ApplyLeave(gameObject);
+            // 기존 위치에서 제거
+            ApplyLeave(gameObject);
 
 			if (gameObject.Room == null)
 				return false;
 			if (gameObject.Room.Map != this)
 				return false;
 
-			PositionInfo posInfo = gameObject.PosInfo;
+            // 새로운 위치로 이동 가능한지 확인
+            PositionInfo posInfo = gameObject.PosInfo;
 			if (CanGo(dest, true) == false)
 				return false;
 
-			{
-				int x = dest.x - MinX;
+            // 이동 가능하면 이동
+            {
+                int x = dest.x - MinX;
 				int y = MaxY - dest.y;
 				_objects[y, x] = gameObject;
 			}

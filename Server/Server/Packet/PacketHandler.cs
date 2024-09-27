@@ -11,8 +11,6 @@ class PacketHandler
         C_Move movePacket = packet as C_Move;
         ClientSession clientSession = session as ClientSession;
 
-        //Console.WriteLine($"C_Move ({movePacket.PosInfo.PosX}, {movePacket.PosInfo.PosY})");
-
         Player player = clientSession.MyPlayer;
         if (player == null)
             return;
@@ -20,8 +18,9 @@ class PacketHandler
         GameRoom room = player.Room;
         if (room == null)
             return;
-
-        room.Push(room.HandleMove, player, movePacket);
+            
+        // JobTimer를 사용하여 바로 처리하지 않고 다음 JobTimer Flush에서 처리
+        room.Push(0, room.HandleMove, player, movePacket);
     }
 
     public static void C_SkillHandler(PacketSession session, IMessage packet)
@@ -37,6 +36,6 @@ class PacketHandler
         if (room == null)
             return;
 
-        room.Push(room.HandleSkill, player, skillPacket);
+        room.Push(0, room.HandleSkill, player, skillPacket);
     }
 }

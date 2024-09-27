@@ -15,19 +15,22 @@ using System.Collections.Generic;
 class PacketManager
 {{
 	#region Singleton
-	static PacketManager _instance = new PacketManager();
-	public static PacketManager Instance {{ get {{ return _instance; }} }}
-	#endregion
+	static PacketManager instance = new PacketManager();
+	public static PacketManager Instance {{ get {{ return instance; }} }}
 
 	PacketManager()
 	{{
 		Register();
 	}}
 
-	Dictionary<ushort, Action<PacketSession, ArraySegment<byte>, ushort>> _onRecv = new Dictionary<ushort, Action<PacketSession, ArraySegment<byte>, ushort>>();
-	Dictionary<ushort, Action<PacketSession, IMessage>> _handler = new Dictionary<ushort, Action<PacketSession, IMessage>>();
+	#endregion
+
+	Dictionary<ushort, Action<PacketSession, ArraySegment<byte>, ushort>> onRecv = new Dictionary<ushort, Action<PacketSession, ArraySegment<byte>, ushort>>();
+	Dictionary<ushort, Action<PacketSession, IMessage>> handler = new Dictionary<ushort, Action<PacketSession, IMessage>>();
 		
 	public Action<PacketSession, IMessage, ushort> CustomHandler {{ get; set; }}
+
+
 
 	public void Register()
 	{{{0}
@@ -43,7 +46,7 @@ class PacketManager
 		count += 2;
 
 		Action<PacketSession, ArraySegment<byte>, ushort> action = null;
-		if (_onRecv.TryGetValue(id, out action))
+		if (onRecv.TryGetValue(id, out action))
 			action.Invoke(session, buffer, id);
 	}}
 
@@ -59,7 +62,7 @@ class PacketManager
 		else
 		{{
 			Action<PacketSession, IMessage> action = null;
-			if (_handler.TryGetValue(id, out action))
+			if (handler.TryGetValue(id, out action))
 				action.Invoke(session, pkt);
 		}}
 	}}
@@ -67,7 +70,7 @@ class PacketManager
 	public Action<PacketSession, IMessage> GetPacketHandler(ushort id)
 	{{
 		Action<PacketSession, IMessage> action = null;
-		if (_handler.TryGetValue(id, out action))
+		if (handler.TryGetValue(id, out action))
 			return action;
 		return null;
 	}}
@@ -77,8 +80,8 @@ class PacketManager
         // {1} 패킷 이름
         public static string managerRegisterFormat =
 @"		
-		_onRecv.Add((ushort)MsgId.{0}, MakePacket<{1}>);
-		_handler.Add((ushort)MsgId.{0}, PacketHandler.{1}Handler);";
+		onRecv.Add((ushort)MsgId.{0}, MakePacket<{1}>);
+		handler.Add((ushort)MsgId.{0}, PacketHandler.{1}Handler);";
 
     }
 }

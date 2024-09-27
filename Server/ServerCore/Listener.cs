@@ -6,20 +6,18 @@ namespace ServerCore
 {
 	public class Listener
 	{
-		Socket _listenSocket;
-		Func<Session> _sessionFactory;
+		Socket listenSocket;
+		Func<Session> sessionFactory;
+
+
 
 		public void Init(IPEndPoint endPoint, Func<Session> sessionFactory, int register = 10, int backlog = 100)
 		{
-			_listenSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-			_sessionFactory += sessionFactory;
+			listenSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+			this.sessionFactory += sessionFactory;
 
-			// 문지기 교육
-			_listenSocket.Bind(endPoint);
-
-			// 영업 시작
-			// backlog : 최대 대기수
-			_listenSocket.Listen(backlog);
+			listenSocket.Bind(endPoint);
+			listenSocket.Listen(backlog);
 
 			for (int i = 0; i < register; i++)
 			{
@@ -33,7 +31,7 @@ namespace ServerCore
 		{
 			args.AcceptSocket = null;
 
-			bool pending = _listenSocket.AcceptAsync(args);
+			bool pending = listenSocket.AcceptAsync(args);
 			if (pending == false)
 				OnAcceptCompleted(null, args);
 		}
@@ -42,7 +40,7 @@ namespace ServerCore
 		{
 			if (args.SocketError == SocketError.Success)
 			{
-				Session session = _sessionFactory.Invoke();
+				Session session = sessionFactory.Invoke();
 				session.Start(args.AcceptSocket);
 				session.OnConnected(args.AcceptSocket.RemoteEndPoint);
 			}

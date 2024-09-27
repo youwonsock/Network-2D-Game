@@ -7,26 +7,29 @@ using System.Collections.Generic;
 class PacketManager
 {
 	#region Singleton
-	static PacketManager _instance = new PacketManager();
-	public static PacketManager Instance { get { return _instance; } }
-	#endregion
+	static PacketManager instance = new PacketManager();
+	public static PacketManager Instance { get { return instance; } }
 
 	PacketManager()
 	{
 		Register();
 	}
 
-	Dictionary<ushort, Action<PacketSession, ArraySegment<byte>, ushort>> _onRecv = new Dictionary<ushort, Action<PacketSession, ArraySegment<byte>, ushort>>();
-	Dictionary<ushort, Action<PacketSession, IMessage>> _handler = new Dictionary<ushort, Action<PacketSession, IMessage>>();
+	#endregion
+
+	Dictionary<ushort, Action<PacketSession, ArraySegment<byte>, ushort>> onRecv = new Dictionary<ushort, Action<PacketSession, ArraySegment<byte>, ushort>>();
+	Dictionary<ushort, Action<PacketSession, IMessage>> handler = new Dictionary<ushort, Action<PacketSession, IMessage>>();
 		
 	public Action<PacketSession, IMessage, ushort> CustomHandler { get; set; }
 
+
+
 	public void Register()
 	{		
-		_onRecv.Add((ushort)MsgId.CMove, MakePacket<C_Move>);
-		_handler.Add((ushort)MsgId.CMove, PacketHandler.C_MoveHandler);		
-		_onRecv.Add((ushort)MsgId.CSkill, MakePacket<C_Skill>);
-		_handler.Add((ushort)MsgId.CSkill, PacketHandler.C_SkillHandler);
+		onRecv.Add((ushort)MsgId.CMove, MakePacket<C_Move>);
+		handler.Add((ushort)MsgId.CMove, PacketHandler.C_MoveHandler);		
+		onRecv.Add((ushort)MsgId.CSkill, MakePacket<C_Skill>);
+		handler.Add((ushort)MsgId.CSkill, PacketHandler.C_SkillHandler);
 	}
 
 	public void OnRecvPacket(PacketSession session, ArraySegment<byte> buffer)
@@ -39,7 +42,7 @@ class PacketManager
 		count += 2;
 
 		Action<PacketSession, ArraySegment<byte>, ushort> action = null;
-		if (_onRecv.TryGetValue(id, out action))
+		if (onRecv.TryGetValue(id, out action))
 			action.Invoke(session, buffer, id);
 	}
 
@@ -55,7 +58,7 @@ class PacketManager
 		else
 		{
 			Action<PacketSession, IMessage> action = null;
-			if (_handler.TryGetValue(id, out action))
+			if (handler.TryGetValue(id, out action))
 				action.Invoke(session, pkt);
 		}
 	}
@@ -63,7 +66,7 @@ class PacketManager
 	public Action<PacketSession, IMessage> GetPacketHandler(ushort id)
 	{
 		Action<PacketSession, IMessage> action = null;
-		if (_handler.TryGetValue(id, out action))
+		if (handler.TryGetValue(id, out action))
 			return action;
 		return null;
 	}

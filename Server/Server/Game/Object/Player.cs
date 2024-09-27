@@ -11,14 +11,14 @@ namespace Server.Game
 			ObjectType = GameObjectType.Player;
 		}
 
-		public override void OnDamaged(GameObject attacker, int damage)
+		public override void OnDamaged(int damage)
 		{
-			base.OnDamaged(attacker, damage);
+			base.OnDamaged(damage);
 		}
 
-		public override void OnDead(GameObject attacker)
+		public override void OnDead()
 		{
-			base.OnDead(attacker);
+			base.OnDead();
 		}
 	}
 }

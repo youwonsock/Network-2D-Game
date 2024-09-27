@@ -7,38 +7,41 @@ using System.Collections.Generic;
 class PacketManager
 {
 	#region Singleton
-	static PacketManager _instance = new PacketManager();
-	public static PacketManager Instance { get { return _instance; } }
-	#endregion
+	static PacketManager instance = new PacketManager();
+	public static PacketManager Instance { get { return instance; } }
 
 	PacketManager()
 	{
 		Register();
 	}
 
-	Dictionary<ushort, Action<PacketSession, ArraySegment<byte>, ushort>> _onRecv = new Dictionary<ushort, Action<PacketSession, ArraySegment<byte>, ushort>>();
-	Dictionary<ushort, Action<PacketSession, IMessage>> _handler = new Dictionary<ushort, Action<PacketSession, IMessage>>();
+	#endregion
+
+	Dictionary<ushort, Action<PacketSession, ArraySegment<byte>, ushort>> onRecv = new Dictionary<ushort, Action<PacketSession, ArraySegment<byte>, ushort>>();
+	Dictionary<ushort, Action<PacketSession, IMessage>> handler = new Dictionary<ushort, Action<PacketSession, IMessage>>();
 		
 	public Action<PacketSession, IMessage, ushort> CustomHandler { get; set; }
 
+
+
 	public void Register()
 	{		
-		_onRecv.Add((ushort)MsgId.SEnterGame, MakePacket<S_EnterGame>);
-		_handler.Add((ushort)MsgId.SEnterGame, PacketHandler.S_EnterGameHandler);		
-		_onRecv.Add((ushort)MsgId.SLeaveGame, MakePacket<S_LeaveGame>);
-		_handler.Add((ushort)MsgId.SLeaveGame, PacketHandler.S_LeaveGameHandler);		
-		_onRecv.Add((ushort)MsgId.SSpawn, MakePacket<S_Spawn>);
-		_handler.Add((ushort)MsgId.SSpawn, PacketHandler.S_SpawnHandler);		
-		_onRecv.Add((ushort)MsgId.SDespawn, MakePacket<S_Despawn>);
-		_handler.Add((ushort)MsgId.SDespawn, PacketHandler.S_DespawnHandler);		
-		_onRecv.Add((ushort)MsgId.SMove, MakePacket<S_Move>);
-		_handler.Add((ushort)MsgId.SMove, PacketHandler.S_MoveHandler);		
-		_onRecv.Add((ushort)MsgId.SSkill, MakePacket<S_Skill>);
-		_handler.Add((ushort)MsgId.SSkill, PacketHandler.S_SkillHandler);		
-		_onRecv.Add((ushort)MsgId.SChangeHp, MakePacket<S_ChangeHp>);
-		_handler.Add((ushort)MsgId.SChangeHp, PacketHandler.S_ChangeHpHandler);		
-		_onRecv.Add((ushort)MsgId.SDie, MakePacket<S_Die>);
-		_handler.Add((ushort)MsgId.SDie, PacketHandler.S_DieHandler);
+		onRecv.Add((ushort)MsgId.SEnterGame, MakePacket<S_EnterGame>);
+		handler.Add((ushort)MsgId.SEnterGame, PacketHandler.S_EnterGameHandler);		
+		onRecv.Add((ushort)MsgId.SLeaveGame, MakePacket<S_LeaveGame>);
+		handler.Add((ushort)MsgId.SLeaveGame, PacketHandler.S_LeaveGameHandler);		
+		onRecv.Add((ushort)MsgId.SSpawn, MakePacket<S_Spawn>);
+		handler.Add((ushort)MsgId.SSpawn, PacketHandler.S_SpawnHandler);		
+		onRecv.Add((ushort)MsgId.SDespawn, MakePacket<S_Despawn>);
+		handler.Add((ushort)MsgId.SDespawn, PacketHandler.S_DespawnHandler);		
+		onRecv.Add((ushort)MsgId.SMove, MakePacket<S_Move>);
+		handler.Add((ushort)MsgId.SMove, PacketHandler.S_MoveHandler);		
+		onRecv.Add((ushort)MsgId.SSkill, MakePacket<S_Skill>);
+		handler.Add((ushort)MsgId.SSkill, PacketHandler.S_SkillHandler);		
+		onRecv.Add((ushort)MsgId.SChangeHp, MakePacket<S_ChangeHp>);
+		handler.Add((ushort)MsgId.SChangeHp, PacketHandler.S_ChangeHpHandler);		
+		onRecv.Add((ushort)MsgId.SDie, MakePacket<S_Die>);
+		handler.Add((ushort)MsgId.SDie, PacketHandler.S_DieHandler);
 	}
 
 	public void OnRecvPacket(PacketSession session, ArraySegment<byte> buffer)
@@ -51,7 +54,7 @@ class PacketManager
 		count += 2;
 
 		Action<PacketSession, ArraySegment<byte>, ushort> action = null;
-		if (_onRecv.TryGetValue(id, out action))
+		if (onRecv.TryGetValue(id, out action))
 			action.Invoke(session, buffer, id);
 	}
 
@@ -67,7 +70,7 @@ class PacketManager
 		else
 		{
 			Action<PacketSession, IMessage> action = null;
-			if (_handler.TryGetValue(id, out action))
+			if (handler.TryGetValue(id, out action))
 				action.Invoke(session, pkt);
 		}
 	}
@@ -75,7 +78,7 @@ class PacketManager
 	public Action<PacketSession, IMessage> GetPacketHandler(ushort id)
 	{
 		Action<PacketSession, IMessage> action = null;
-		if (_handler.TryGetValue(id, out action))
+		if (handler.TryGetValue(id, out action))
 			return action;
 		return null;
 	}

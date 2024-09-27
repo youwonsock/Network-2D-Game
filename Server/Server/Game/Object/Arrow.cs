@@ -5,27 +5,28 @@ namespace Server.Game
 {
 	public class Arrow : Projectile
 	{
-		public GameObject Owner { get; set; }
+		long nextMoveTick = 0;
 
-		long _nextMoveTick = 0;
+
 
 		public override void Update()
 		{
-			if (Data == null || Data.projectile == null || Owner == null || Room == null)
+			if (Data == null || Data.projectile == null || Room == null)
 				return;
 
-			if (_nextMoveTick >= Environment.TickCount64)
+			if (nextMoveTick >= Environment.TickCount64)
 				return;
 
 			long tick = (long)(1000 / Data.projectile.speed);
-			_nextMoveTick = Environment.TickCount64 + tick;
+            nextMoveTick = Environment.TickCount64 + tick;
 
 			Vector2Int destPos = GetFrontCellPos();
 			if (Room.Map.CanGo(destPos))
 			{
 				CellPos = destPos;
 
-				S_Move movePacket = new S_Move();
+                // 방안에 모든 유저에게 이동 패킷 전송
+                S_Move movePacket = new S_Move();
 				movePacket.ObjectId = Id;
 				movePacket.PosInfo = PosInfo;
 				Room.Broadcast(movePacket);
@@ -34,13 +35,10 @@ namespace Server.Game
 			{
 				GameObject target = Room.Map.Find(destPos);
 				if (target != null)
-				{
-					target.OnDamaged(this, Data.damage + Owner.Stat.Attack);
-				}
+					target.OnDamaged(Data.damage);
 
-				// 소멸
-				Room.Push(Room.LeaveGame, Id);
-			}
+				Room.Push(0, Room.LeaveGame, Id);   // delete arrow from room
+            }
 		}
 	}
 }

@@ -13,15 +13,21 @@ namespace Server
 		public Player MyPlayer { get; set; }
 		public int SessionId { get; set; }
 
+
+
 		public void Send(IMessage packet)
 		{
 			string msgName = packet.Descriptor.Name.Replace("_", string.Empty);
 			MsgId msgId = (MsgId)Enum.Parse(typeof(MsgId), msgName);
 			ushort size = (ushort)packet.CalculateSize();
 			byte[] sendBuffer = new byte[size + 4];
+			
+			// size 및 id 기입
 			Array.Copy(BitConverter.GetBytes((ushort)(size + 4)), 0, sendBuffer, 0, sizeof(ushort));
 			Array.Copy(BitConverter.GetBytes((ushort)msgId), 0, sendBuffer, 2, sizeof(ushort));
-			Array.Copy(packet.ToByteArray(), 0, sendBuffer, 4, size);
+
+            // 실제 데이터 기입
+            Array.Copy(packet.ToByteArray(), 0, sendBuffer, 4, size);
 			Send(new ArraySegment<byte>(sendBuffer));
 		}
 
@@ -45,7 +51,7 @@ namespace Server
 			}
 
             GameRoom room = RoomManager.Instance.Find(1);
-			room.Push(room.EnterGame, MyPlayer);
+			room.Push(0, room.EnterGame, MyPlayer);
         }
 
 		public override void OnRecvPacket(ArraySegment<byte> buffer)
@@ -56,7 +62,7 @@ namespace Server
 		public override void OnDisconnected(EndPoint endPoint)
 		{
 			GameRoom room = RoomManager.Instance.Find(1);
-			room.Push(room.LeaveGame, MyPlayer.Info.ObjectId);
+			room.Push(0, room.LeaveGame, MyPlayer.Info.ObjectId);
 
 			SessionManager.Instance.Remove(this);
 

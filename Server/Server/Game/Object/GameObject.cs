@@ -42,6 +42,8 @@ namespace Server.Game
 			set { PosInfo.State = value; }
 		}
 
+
+
 		public GameObject()
 		{
 			Info.PosInfo = PosInfo;
@@ -107,13 +109,14 @@ namespace Server.Game
 				return MoveDir.Down;
 		}
 
-		public virtual void OnDamaged(GameObject attacker, int damage)
+		public virtual void OnDamaged(int damage)
 		{
 			if (Room == null)
 				return;
 
 			Stat.Hp = Math.Max(Stat.Hp - damage, 0);
 
+			// 변경된 체력을 모두에게 통지
 			S_ChangeHp changePacket = new S_ChangeHp();
 			changePacket.ObjectId = Id;
 			changePacket.Hp = Stat.Hp;
@@ -121,23 +124,25 @@ namespace Server.Game
 
 			if (Stat.Hp <= 0)
 			{
-				OnDead(attacker);
+				OnDead();
 			}
 		}
 
-		public virtual void OnDead(GameObject attacker)
+		public virtual void OnDead()
 		{
 			if (Room == null)
 				return;
 
+			// 사망 정보를 모두에게 통지
 			S_Die diePacket = new S_Die();
 			diePacket.ObjectId = Id;
-			diePacket.AttackerId = attacker.Id;
 			Room.Broadcast(diePacket);
 
-			GameRoom room = Room;
+            // 방에서 제거
+            GameRoom room = Room;
 			room.LeaveGame(Id);
 
+			// 즉시 리스폰 처리
 			Stat.Hp = Stat.MaxHp;
 			PosInfo.State = CreatureState.Idle;
 			PosInfo.MoveDir = MoveDir.Down;
