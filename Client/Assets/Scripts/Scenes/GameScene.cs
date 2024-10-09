@@ -3,6 +3,8 @@ using UnityEngine.EventSystems;
 
 public class GameScene : MonoBehaviour
 {
+    UI_GameScene sceneUI;
+
     public void Awake()
     {
         Object obj = GameObject.FindObjectOfType(typeof(EventSystem));
@@ -11,6 +13,8 @@ public class GameScene : MonoBehaviour
 
         Managers.Map.LoadMap(1);
 
-        Screen.SetResolution(640, 480, false);
+        Screen.SetResolution(480, 320, false);
+
+        sceneUI = Managers.UI.ShowSceneUI<UI_GameScene>();
     }
 }

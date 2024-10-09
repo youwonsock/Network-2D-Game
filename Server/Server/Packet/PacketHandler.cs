@@ -18,9 +18,9 @@ class PacketHandler
         GameRoom room = player.Room;
         if (room == null)
             return;
-            
+
         // JobTimer를 사용하여 바로 처리하지 않고 다음 JobTimer Flush에서 처리
-        room.Push(0, room.HandleMove, player, movePacket);
+        room.Push(room.HandleMove, player, movePacket);
     }
 
     public static void C_SkillHandler(PacketSession session, IMessage packet)
@@ -36,6 +36,31 @@ class PacketHandler
         if (room == null)
             return;
 
-        room.Push(0, room.HandleSkill, player, skillPacket);
+        room.Push(room.HandleSkill, player, skillPacket);
+    }
+
+    public static void C_LoginHandler(PacketSession session, IMessage packet)
+    {
+        C_Login loginPacket = packet as C_Login;
+        ClientSession clientSession = session as ClientSession;
+
+        clientSession.HandleLogin(loginPacket);
+    }
+
+    public static void C_EnterGameHandler(PacketSession session, IMessage packet)
+    {
+        C_EnterGame enterGamePacket = (C_EnterGame)packet;
+        ClientSession clientSession = (ClientSession)session;
+
+        clientSession.HandleEnterGame(enterGamePacket);
+    }
+
+    public static void C_CreatePlayerHandler(PacketSession session, IMessage packet)
+    {
+        C_CreatePlayer createPlayerPacket = (C_CreatePlayer)packet;
+        ClientSession clientSession = (ClientSession)session;
+
+        clientSession.HandleCreatePlayer(createPlayerPacket);
     }
 }
+

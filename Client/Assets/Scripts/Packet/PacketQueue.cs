@@ -12,11 +12,11 @@ public class PacketQueue
 	public static PacketQueue Instance { get; } = new PacketQueue();
 
 	Queue<PacketMessage> _packetQueue = new Queue<PacketMessage>();
-	object _lock = new object();
+	object lockObj = new object();
 
 	public void Push(ushort id, IMessage packet)
 	{
-		lock (_lock)
+		lock (lockObj)
 		{
 			_packetQueue.Enqueue(new PacketMessage() { Id = id, Message = packet });
 		}
@@ -24,7 +24,7 @@ public class PacketQueue
 
 	public PacketMessage Pop()
 	{
-		lock (_lock)
+		lock (lockObj)
 		{
 			if (_packetQueue.Count == 0)
 				return null;
@@ -37,7 +37,7 @@ public class PacketQueue
 	{
 		List<PacketMessage> list = new List<PacketMessage>();
 
-		lock (_lock)
+		lock (lockObj)
 		{
 			while (_packetQueue.Count > 0)
 				list.Add(_packetQueue.Dequeue());

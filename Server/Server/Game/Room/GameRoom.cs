@@ -6,8 +6,8 @@ using System.Collections.Generic;
 
 namespace Server.Game
 {
-	public class GameRoom : JobTimer
-	{
+	public class GameRoom : JobSerializer
+    {
 		public int RoomId { get; set; }
 
 		Dictionary<int, Player> playerDict = new Dictionary<int, Player>();
@@ -24,7 +24,8 @@ namespace Server.Game
 
 			// 테스트를 위한 기본 몬스터 1마리 생성
 			Monster monster = ObjectManager.Instance.Add<Monster>();
-			monster.CellPos = new Vector2Int(5, 5);
+			monster.Init(1);
+            monster.CellPos = new Vector2Int(5, 5);
 			EnterGame(monster);
 		}
 
@@ -107,9 +108,6 @@ namespace Server.Game
 						p.Session.Send(spawnPacket);
 				}
 			}
-
-            // test log
-            Console.WriteLine($"EnterGame: {gameObject.Id}");
         }
 
         public void LeaveGame(int objectId)
@@ -122,8 +120,10 @@ namespace Server.Game
 				if (playerDict.Remove(objectId, out player) == false)
 					return;
 
-				// 맵에서 플레이어 제거
-				Map.ApplyLeave(player);
+				player.OnLeaveGame();
+
+                // 맵에서 플레이어 제거
+                Map.ApplyLeave(player);
 				player.Room = null;
 
 				{
@@ -160,9 +160,6 @@ namespace Server.Game
 						p.Session.Send(despawnPacket);
 				}
 			}
-
-            // test log
-            Console.WriteLine($"LeaveGame: {objectId}");
 	    }
 
 		public void HandleMove(Player player, C_Move movePacket)
@@ -192,9 +189,6 @@ namespace Server.Game
 			resMovePacket.PosInfo = movePacket.PosInfo;
 
 			Broadcast(resMovePacket);
-
-            // test log
-            Console.WriteLine($"Player Move: {player.Info.ObjectId} : ({movePosInfo.PosX}, {movePosInfo.PosY})");
         }
 
 		public void HandleSkill(Player player, C_Skill skillPacket)
@@ -228,19 +222,17 @@ namespace Server.Game
 						if (arrow == null)
 							return;
 
-						arrow.Data = skillData;
+						arrow.Owner = player;
+                        arrow.Data = skillData;
 						arrow.PosInfo.State = CreatureState.Moving;
 						arrow.PosInfo.MoveDir = player.PosInfo.MoveDir;
 						arrow.PosInfo.PosX = player.PosInfo.PosX;
 						arrow.PosInfo.PosY = player.PosInfo.PosY;
 						arrow.Speed = skillData.projectile.speed;
-						Push(0, EnterGame, arrow);
+						Push(EnterGame, arrow);
 					}
 					break;
 			}
-
-            // test log
-            Console.WriteLine($"Player Skill: {player.Info.ObjectId} : {skillPacket.Info.SkillId}");
         }
 
 		public Player FindPlayer(Func<GameObject, bool> condition)

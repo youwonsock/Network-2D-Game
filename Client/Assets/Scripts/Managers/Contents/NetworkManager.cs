@@ -6,11 +6,11 @@ using Google.Protobuf;
 
 public class NetworkManager
 {
-	ServerSession _session = new ServerSession();
+	ServerSession session = new ServerSession();
 
 	public void Send(IMessage packet)
 	{
-		_session.Send(packet);
+        session.Send(packet);
 	}
 
 	public void Init()
@@ -24,7 +24,7 @@ public class NetworkManager
 		Connector connector = new Connector();
 
 		connector.Connect(endPoint,
-			() => { return _session; },
+			() => { return session; },
 			1);
 	}
 
@@ -35,7 +35,7 @@ public class NetworkManager
 		{
 			Action<PacketSession, IMessage> handler = PacketManager.Instance.GetPacketHandler(packet.Id);
 			if (handler != null)
-				handler.Invoke(_session, packet.Message);
+				handler.Invoke(session, packet.Message);
 		}
 
 	}

@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class CreatureController : BaseController
 {
-	HpBar _hpBar;
+	HpBar hpBar;
 
 	public override StatInfo Stat
 	{
@@ -22,20 +22,20 @@ public class CreatureController : BaseController
 		GameObject go = Managers.Resource.Instantiate("UI/HpBar", transform);
 		go.transform.localPosition = new Vector3(0, 0.5f, 0);
 		go.name = "HpBar";
-		_hpBar = go.GetComponent<HpBar>();
+		hpBar = go.GetComponent<HpBar>();
 		UpdateHpBar();
 	}
 
 	void UpdateHpBar()
 	{
-		if (_hpBar == null)
+		if (hpBar == null)
 			return;
 
 		float ratio = 0.0f;
 		if (Stat.MaxHp > 0)
 			ratio = ((float)Hp) / Stat.MaxHp;
 
-		_hpBar.SetHpBar(ratio);
+		hpBar.SetHpBar(ratio);
 	}
 
 	protected override void Init()

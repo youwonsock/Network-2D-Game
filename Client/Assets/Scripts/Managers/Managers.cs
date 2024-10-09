@@ -2,40 +2,44 @@
 
 public class Managers : MonoBehaviour
 {
-    static Managers s_instance; // 유일성이 보장된다
-    static Managers Instance { get { Init(); return s_instance; } } // 유일한 매니저를 갖고온다
+    static Managers instance; // 유일성이 보장된다
+    static Managers Instance { get { Init(); return instance; } } // 유일한 매니저를 갖고온다
 
     #region Contents
-    MapManager _map = new MapManager();
-    ObjectManager _obj = new ObjectManager();
-    NetworkManager _network = new NetworkManager();
+    InventoryManager inven = new InventoryManager();
+    MapManager map = new MapManager();
+    ObjectManager obj = new ObjectManager();
+    NetworkManager network = new NetworkManager();
 
-    public static MapManager Map { get { return Instance._map; } }
-    public static ObjectManager Object { get { return Instance._obj; } }
-    public static NetworkManager Network { get { return Instance._network; } }
+    public static InventoryManager Inven { get { return Instance.inven; } }
+    public static MapManager Map { get { return Instance.map; } }
+    public static ObjectManager Object { get { return Instance.obj; } }
+    public static NetworkManager Network { get { return Instance.network; } }
 	#endregion
 
 	#region Core
-	DataManager _data = new DataManager();
-    ResourceManager _resource = new ResourceManager();
+	DataManager data = new DataManager();
+    ResourceManager resource = new ResourceManager();
+    UIManager ui = new UIManager();
 
-    public static DataManager Data { get { return Instance._data; } }
-    public static ResourceManager Resource { get { return Instance._resource; } }
-	#endregion
+    public static DataManager Data { get { return Instance.data; } }
+    public static ResourceManager Resource { get { return Instance.resource; } }
+    public static UIManager UI { get { return Instance.ui; } }
+    #endregion
 
-	void Start()
+    void Start()
     {
         Init();
 	}
 
     void Update()
     {
-        _network.Update();
+        network.Update();
     }
 
     static void Init()
     {
-        if (s_instance == null)
+        if (instance == null)
         {
 			GameObject go = GameObject.Find("@Managers");
             if (go == null)
@@ -45,10 +49,10 @@ public class Managers : MonoBehaviour
             }
 
             DontDestroyOnLoad(go);
-            s_instance = go.GetComponent<Managers>();
+            instance = go.GetComponent<Managers>();
 
-            s_instance._network.Init();
-            s_instance._data.Init();
+            instance.network.Init();
+            instance.data.Init();
         }		
 	}
 }

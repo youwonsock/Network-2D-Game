@@ -109,47 +109,49 @@ namespace Server.Game
 				return MoveDir.Down;
 		}
 
-		public virtual void OnDamaged(int damage)
+		public virtual void OnDamaged(GameObject attacker, int damage)
 		{
-			if (Room == null)
-				return;
+            if (Room == null)
+                return;
 
-			Stat.Hp = Math.Max(Stat.Hp - damage, 0);
+            Stat.Hp = Math.Max(Stat.Hp - damage, 0);
 
-			// 변경된 체력을 모두에게 통지
-			S_ChangeHp changePacket = new S_ChangeHp();
-			changePacket.ObjectId = Id;
-			changePacket.Hp = Stat.Hp;
-			Room.Broadcast(changePacket);
+            S_ChangeHp changePacket = new S_ChangeHp();
+            changePacket.ObjectId = Id;
+            changePacket.Hp = Stat.Hp;
+            Room.Broadcast(changePacket);
 
-			if (Stat.Hp <= 0)
-			{
-				OnDead();
-			}
-		}
+            if (Stat.Hp <= 0)
+            {
+                OnDead(attacker);
+            }
+        }
 
-		public virtual void OnDead()
+		public virtual void OnDead(GameObject attacker)
 		{
-			if (Room == null)
-				return;
+            if (Room == null)
+                return;
 
-			// 사망 정보를 모두에게 통지
-			S_Die diePacket = new S_Die();
-			diePacket.ObjectId = Id;
-			Room.Broadcast(diePacket);
+            S_Die diePacket = new S_Die();
+            diePacket.ObjectId = Id;
+            diePacket.AttackerId = attacker.Id;
+            Room.Broadcast(diePacket);
 
-            // 방에서 제거
             GameRoom room = Room;
-			room.LeaveGame(Id);
+            room.LeaveGame(Id);
 
-			// 즉시 리스폰 처리
-			Stat.Hp = Stat.MaxHp;
-			PosInfo.State = CreatureState.Idle;
-			PosInfo.MoveDir = MoveDir.Down;
-			PosInfo.PosX = 0;
-			PosInfo.PosY = 0;
+            Stat.Hp = Stat.MaxHp;
+            PosInfo.State = CreatureState.Idle;
+            PosInfo.MoveDir = MoveDir.Down;
+            PosInfo.PosX = 0;
+            PosInfo.PosY = 0;
 
-			room.EnterGame(this);
-		}
-	}
+            room.EnterGame(this);
+        }
+
+        public virtual GameObject GetOwner()
+        {
+            return this;
+        }
+    }
 }

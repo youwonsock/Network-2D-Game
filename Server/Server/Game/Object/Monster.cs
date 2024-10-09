@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.Protocol;
 using Server.Data;
+using Server.DB;
 using System;
 using System.Collections.Generic;
 
@@ -15,21 +16,28 @@ namespace Server.Game
         long nextSearchTick = 0;
         long nextMoveTick = 0;
 
+		public int TemplateId { get; private set; }
+
 
 
         public Monster()
 		{
 			ObjectType = GameObjectType.Monster;
-			
-			Stat.Level = 1;
-			Stat.Hp = 100;
-			Stat.MaxHp = 100;
-			Stat.Speed = 5.0f;
-
-			State = CreatureState.Idle;
 		}
 
-		public override void Update()
+		public void Init(int templateId)
+		{
+            TemplateId = templateId;
+
+            MonsterData monsterData = null;
+            DataManager.MonsterDict.TryGetValue(TemplateId, out monsterData);
+			Stat.MergeFrom(monsterData.stat);
+			Stat.Hp = monsterData.stat.MaxHp;
+
+            State = CreatureState.Idle;
+        }
+
+        public override void Update()
 		{
 			switch (State)
 			{
@@ -159,7 +167,7 @@ namespace Server.Game
 				if (DataManager.SkillDict.TryGetValue(1, out skillData))
 				{
 					// 데미지 판정
-					target.OnDamaged(skillData.damage);
+					target.OnDamaged(this, skillData.damage + Stat.Attack);
 
 					// 스킬 사용 Broadcast
 					S_Skill skill = new S_Skill() { Info = new SkillInfo() };
@@ -183,5 +191,38 @@ namespace Server.Game
 		{
 
 		}
-	}
+
+		public override void OnDead(GameObject attacker)
+        {
+            base.OnDead(attacker);
+
+            GameObject owner = attacker.GetOwner();
+             if (owner.ObjectType == GameObjectType.Player)
+            {
+                RewardData rewardData = GetRandomReward();
+                if (rewardData != null)
+                {
+                    Player player = (Player)owner;
+                    DbTransaction.RewardPlayer(player, rewardData, Room);
+                }
+            }
+        }
+
+		private RewardData GetRandomReward()
+		{
+			MonsterData monsterData = null;
+			DataManager.MonsterDict.TryGetValue(TemplateId, out monsterData);
+
+			int rand = new Random().Next(0, 100);
+			int sum = 0;
+			foreach (RewardData reward in monsterData.rewards)
+			{
+				sum += reward.probability;
+				if(rand < sum)
+                    return reward;
+            }
+
+            return null;
+        }
+    }
 }

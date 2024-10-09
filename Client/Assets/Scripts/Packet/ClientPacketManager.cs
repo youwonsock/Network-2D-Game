@@ -41,7 +41,17 @@ class PacketManager
 		onRecv.Add((ushort)MsgId.SChangeHp, MakePacket<S_ChangeHp>);
 		handler.Add((ushort)MsgId.SChangeHp, PacketHandler.S_ChangeHpHandler);		
 		onRecv.Add((ushort)MsgId.SDie, MakePacket<S_Die>);
-		handler.Add((ushort)MsgId.SDie, PacketHandler.S_DieHandler);
+		handler.Add((ushort)MsgId.SDie, PacketHandler.S_DieHandler);		
+		onRecv.Add((ushort)MsgId.SConnected, MakePacket<S_Connected>);
+		handler.Add((ushort)MsgId.SConnected, PacketHandler.S_ConnectedHandler);		
+		onRecv.Add((ushort)MsgId.SLogin, MakePacket<S_Login>);
+		handler.Add((ushort)MsgId.SLogin, PacketHandler.S_LoginHandler);		
+		onRecv.Add((ushort)MsgId.SCreatePlayer, MakePacket<S_CreatePlayer>);
+		handler.Add((ushort)MsgId.SCreatePlayer, PacketHandler.S_CreatePlayerHandler);		
+		onRecv.Add((ushort)MsgId.SItemList, MakePacket<S_ItemList>);
+		handler.Add((ushort)MsgId.SItemList, PacketHandler.S_ItemListHandler);		
+		onRecv.Add((ushort)MsgId.SAddItem, MakePacket<S_AddItem>);
+		handler.Add((ushort)MsgId.SAddItem, PacketHandler.S_AddItemHandler);
 	}
 
 	public void OnRecvPacket(PacketSession session, ArraySegment<byte> buffer)

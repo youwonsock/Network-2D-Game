@@ -4,19 +4,27 @@ using UnityEngine;
 public class BaseController : MonoBehaviour
 {
 	public int Id { get; set; }
+    
+	protected bool updated = false;
+    protected Animator animator;
+    protected SpriteRenderer sprite;
 
-	StatInfo _stat = new StatInfo();
+    private PositionInfo positionInfo = new PositionInfo();
+    private StatInfo stat = new StatInfo();
+	
+
+
 	public virtual StatInfo Stat
 	{
-		get { return _stat; }
+		get { return stat; }
 		set
 		{
-			if (_stat.Equals(value))
+			if (stat.Equals(value))
 				return;
 
-			_stat.Hp = value.Hp;
-			_stat.MaxHp = value.MaxHp;
-			_stat.Speed = value.Speed;
+            stat.Hp = value.Hp;
+            stat.MaxHp = value.MaxHp;
+            stat.Speed = value.Speed;
 		}
 	}
 
@@ -35,15 +43,12 @@ public class BaseController : MonoBehaviour
 		}
 	}
 
-	protected bool _updated = false;
-
-	PositionInfo _positionInfo = new PositionInfo();
 	public PositionInfo PosInfo
 	{
-		get { return _positionInfo; }
+		get { return positionInfo; }
 		set
 		{
-			if (_positionInfo.Equals(value))
+			if (positionInfo.Equals(value))
 				return;
 
 			CellPos = new Vector3Int(value.PosX, value.PosY, 0);
@@ -72,12 +77,9 @@ public class BaseController : MonoBehaviour
 
 			PosInfo.PosX = value.x;
 			PosInfo.PosY = value.y;
-			_updated = true;
+			updated = true;
 		}
 	}
-
-	protected Animator _animator;
-	protected SpriteRenderer _sprite;
 
 	public virtual CreatureState State
 	{
@@ -89,7 +91,7 @@ public class BaseController : MonoBehaviour
 
 			PosInfo.State = value;
 			UpdateAnimation();
-			_updated = true;
+			updated = true;
 		}
 	}
 
@@ -104,7 +106,7 @@ public class BaseController : MonoBehaviour
 			PosInfo.MoveDir = value;
 
 			UpdateAnimation();
-			_updated = true;
+			updated = true;
 		}
 	}
 
@@ -145,7 +147,7 @@ public class BaseController : MonoBehaviour
 
 	protected virtual void UpdateAnimation()
 	{
-		if (_animator == null || _sprite == null)
+		if (animator == null || sprite == null)
 			return;
 
 		if (State == CreatureState.Idle)
@@ -153,20 +155,20 @@ public class BaseController : MonoBehaviour
 			switch (Dir)
 			{
 				case MoveDir.Up:
-					_animator.Play("IDLE_BACK");
-					_sprite.flipX = false;
+					animator.Play("IDLE_BACK");
+					sprite.flipX = false;
 					break;
 				case MoveDir.Down:
-					_animator.Play("IDLE_FRONT");
-					_sprite.flipX = false;
+					animator.Play("IDLE_FRONT");
+					sprite.flipX = false;
 					break;
 				case MoveDir.Left:
-					_animator.Play("IDLE_RIGHT");
-					_sprite.flipX = true;
+					animator.Play("IDLE_RIGHT");
+					sprite.flipX = true;
 					break;
 				case MoveDir.Right:
-					_animator.Play("IDLE_RIGHT");
-					_sprite.flipX = false;
+					animator.Play("IDLE_RIGHT");
+					sprite.flipX = false;
 					break;
 			}
 		}
@@ -175,20 +177,20 @@ public class BaseController : MonoBehaviour
 			switch (Dir)
 			{
 				case MoveDir.Up:
-					_animator.Play("WALK_BACK");
-					_sprite.flipX = false;
+					animator.Play("WALK_BACK");
+					sprite.flipX = false;
 					break;
 				case MoveDir.Down:
-					_animator.Play("WALK_FRONT");
-					_sprite.flipX = false;
+					animator.Play("WALK_FRONT");
+					sprite.flipX = false;
 					break;
 				case MoveDir.Left:
-					_animator.Play("WALK_RIGHT");
-					_sprite.flipX = true;
+					animator.Play("WALK_RIGHT");
+					sprite.flipX = true;
 					break;
 				case MoveDir.Right:
-					_animator.Play("WALK_RIGHT");
-					_sprite.flipX = false;
+					animator.Play("WALK_RIGHT");
+					sprite.flipX = false;
 					break;
 			}
 		}
@@ -197,20 +199,20 @@ public class BaseController : MonoBehaviour
 			switch (Dir)
 			{
 				case MoveDir.Up:
-					_animator.Play("ATTACK_BACK");
-					_sprite.flipX = false;
+					animator.Play("ATTACK_BACK");
+					sprite.flipX = false;
 					break;
 				case MoveDir.Down:
-					_animator.Play("ATTACK_FRONT");
-					_sprite.flipX = false;
+					animator.Play("ATTACK_FRONT");
+					sprite.flipX = false;
 					break;
 				case MoveDir.Left:
-					_animator.Play("ATTACK_RIGHT");
-					_sprite.flipX = true;
+					animator.Play("ATTACK_RIGHT");
+					sprite.flipX = true;
 					break;
 				case MoveDir.Right:
-					_animator.Play("ATTACK_RIGHT");
-					_sprite.flipX = false;
+									animator.Play("ATTACK_RIGHT");
+					sprite.flipX = false;
 					break;
 			}
 		}
@@ -232,8 +234,8 @@ public class BaseController : MonoBehaviour
 
 	protected virtual void Init()
 	{
-		_animator = GetComponent<Animator>();
-		_sprite = GetComponent<SpriteRenderer>();
+		animator = GetComponent<Animator>();
+		sprite = GetComponent<SpriteRenderer>();
 		Vector3 pos = Managers.Map.CurrentGrid.CellToWorld(CellPos) + new Vector3(0.5f, 0.5f);
 		transform.position = pos;
 
@@ -263,13 +265,11 @@ public class BaseController : MonoBehaviour
 	{
 	}
 
-	// 스르륵 이동하는 것을 처리
 	protected virtual void UpdateMoving()
 	{
 		Vector3 destPos = Managers.Map.CurrentGrid.CellToWorld(CellPos) + new Vector3(0.5f, 0.5f);
 		Vector3 moveDir = destPos - transform.position;
 
-		// 도착 여부 체크
 		float dist = moveDir.magnitude;
 		if (dist < Speed * Time.deltaTime)
 		{

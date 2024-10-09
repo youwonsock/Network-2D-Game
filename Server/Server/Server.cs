@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using Server.Data;
+using Server.DB;
 using Server.Game;
 using ServerCore;
 
@@ -43,7 +45,7 @@ namespace Server
             // TODO
             while (true)
             {
-                Thread.Sleep(100);
+                DbTransaction.Instance.Flush();
             }
         }
     }

@@ -4,7 +4,10 @@ using UnityEngine;
 
 public class MyPlayerController : PlayerController
 {
-	bool _moveKeyPressed = false;
+	private bool moveKeyPressed = false;
+	private Coroutine coSkillCooltime;
+
+
 
 	protected override void Init()
 	{
@@ -13,7 +16,9 @@ public class MyPlayerController : PlayerController
 
 	protected override void UpdateController()
 	{
-		switch (State)
+        GetUIKeyInput();
+
+        switch (State)
 		{
 			case CreatureState.Idle:
 				GetDirInput();
@@ -29,13 +34,13 @@ public class MyPlayerController : PlayerController
 	protected override void UpdateIdle()
 	{
 		// 이동 상태로 갈지 확인
-		if (_moveKeyPressed)
+		if (moveKeyPressed)
 		{
 			State = CreatureState.Moving;
 			return;
 		}
 
-		if (_coSkillCooltime == null && Input.GetKey(KeyCode.Space))
+		if (coSkillCooltime == null && Input.GetKey(KeyCode.Space))
 		{
 			Debug.Log("Skill !");
 
@@ -43,15 +48,14 @@ public class MyPlayerController : PlayerController
 			skill.Info.SkillId = 2;
 			Managers.Network.Send(skill);
 
-			_coSkillCooltime = StartCoroutine("CoInputCooltime", 0.2f);
+			coSkillCooltime = StartCoroutine("CoInputCooltime", 0.2f);
 		}
 	}
 
-	Coroutine _coSkillCooltime;
 	IEnumerator CoInputCooltime(float time)
 	{
 		yield return new WaitForSeconds(time);
-		_coSkillCooltime = null;
+		coSkillCooltime = null;
 	}
 
 	void LateUpdate()
@@ -59,10 +63,28 @@ public class MyPlayerController : PlayerController
 		Camera.main.transform.position = new Vector3(transform.position.x, transform.position.y, -10);
 	}
 
-	// 키보드 입력
-	void GetDirInput()
+    void GetUIKeyInput()
+    {
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            UI_GameScene gameSceneUI = Managers.UI.SceneUI as UI_GameScene;
+            UI_Inventory invenUI = gameSceneUI.InvenUI;
+
+            if (invenUI.gameObject.activeSelf)
+            {
+                invenUI.gameObject.SetActive(false);
+            }
+            else
+            {
+                invenUI.gameObject.SetActive(true);
+                invenUI.RefreshUI();
+            }
+        }
+    }
+
+    void GetDirInput()
 	{
-		_moveKeyPressed = true;
+		moveKeyPressed = true;
 
 		if (Input.GetKey(KeyCode.W))
 		{
@@ -82,13 +104,13 @@ public class MyPlayerController : PlayerController
 		}
 		else
 		{
-			_moveKeyPressed = false;
+			moveKeyPressed = false;
 		}
 	}
 
 	protected override void MoveToNextPos()
 	{
-		if (_moveKeyPressed == false)
+		if (moveKeyPressed == false)
 		{
 			State = CreatureState.Idle;
 			CheckUpdatedFlag();
@@ -126,12 +148,12 @@ public class MyPlayerController : PlayerController
 
 	protected override void CheckUpdatedFlag()
 	{
-		if (_updated)
+		if (updated)
 		{
 			C_Move movePacket = new C_Move();
 			movePacket.PosInfo = PosInfo;
 			Managers.Network.Send(movePacket);
-			_updated = false;
+			updated = false;
 		}
 	}
 }

@@ -5,40 +5,47 @@ namespace Server.Game
 {
 	public class Arrow : Projectile
 	{
-		long nextMoveTick = 0;
+		public GameObject Owner { get; set; }
+        long nextMoveTick = 0;
 
 
 
 		public override void Update()
 		{
-			if (Data == null || Data.projectile == null || Room == null)
-				return;
+            if (Data == null || Data.projectile == null || Owner == null || Room == null)
+                return;
 
-			if (nextMoveTick >= Environment.TickCount64)
-				return;
+            if (nextMoveTick >= Environment.TickCount64)
+                return;
 
-			long tick = (long)(1000 / Data.projectile.speed);
+            long tick = (long)(1000 / Data.projectile.speed);
             nextMoveTick = Environment.TickCount64 + tick;
 
-			Vector2Int destPos = GetFrontCellPos();
-			if (Room.Map.CanGo(destPos))
-			{
-				CellPos = destPos;
+            Vector2Int destPos = GetFrontCellPos();
+            if (Room.Map.CanGo(destPos))
+            {
+                CellPos = destPos;
 
-                // 방안에 모든 유저에게 이동 패킷 전송
                 S_Move movePacket = new S_Move();
-				movePacket.ObjectId = Id;
-				movePacket.PosInfo = PosInfo;
-				Room.Broadcast(movePacket);
-			}
-			else
-			{
-				GameObject target = Room.Map.Find(destPos);
-				if (target != null)
-					target.OnDamaged(Data.damage);
-
-				Room.Push(0, Room.LeaveGame, Id);   // delete arrow from room
+                movePacket.ObjectId = Id;
+                movePacket.PosInfo = PosInfo;
+                Room.Broadcast(movePacket);
             }
-		}
-	}
+            else
+            {
+                GameObject target = Room.Map.Find(destPos);
+                if (target != null)
+                {
+                    target.OnDamaged(this, Data.damage + Owner.Stat.Attack);
+                }
+
+                Room.Push(Room.LeaveGame, Id);
+            }
+        }
+
+        public override GameObject GetOwner()
+        {
+            return Owner;
+        }
+    }
 }
