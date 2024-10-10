@@ -6,7 +6,7 @@ using System;
 
 namespace Server.DB
 {
-    public class DbTransaction : JobSerializer
+    public partial class DbTransaction : JobSerializer
     {
         public static DbTransaction Instance { get; } = new DbTransaction();
 
@@ -28,7 +28,6 @@ namespace Server.DB
                     bool success = db.SaveChangesEx();
                     if (success)
                     {
-                        // Me
                         room.Push(() => Console.WriteLine($"Hp Saved({playerDb.Hp})"));
                     }
                 }

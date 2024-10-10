@@ -52,6 +52,8 @@ public class MapEditor
                 }
             }
         }
+
+        Debug.Log("Map data generated.");
     }
 
 #endif

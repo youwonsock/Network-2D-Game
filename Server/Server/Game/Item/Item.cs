@@ -33,6 +33,12 @@ namespace Server.Game
             set { Info.Slot = value; }
         }
 
+        public bool Equipped
+        {
+            get { return Info.Equipped; }
+            set { Info.Equipped = value; }
+        }
+
         public ItemType ItemType { get; private set; }
         public bool Stackable { get; protected set; }
 
@@ -107,7 +113,7 @@ namespace Server.Game
 
     public class Armor : Item
     {
-        public ArmorType armorType { get; private set; }
+        public ArmorType ArmorType { get; private set; }
         public int Defence { get; private set; }
 
         public Armor(int templateId) : base(ItemType.Armor)
@@ -126,7 +132,7 @@ namespace Server.Game
             {
                 TemplateId = data.id;
                 Count = 1;
-                armorType = data.armorType;
+                ArmorType = data.armorType;
                 Defence = data.defence;
                 Stackable = false;
             }

@@ -29,6 +29,12 @@ public class Item
         set { Info.Slot = value; }
     }
 
+    public bool Equipped
+    {
+        get { return Info.Equipped; }
+        set { Info.Equipped = value; }
+    }
+
     public ItemType ItemType { get; private set; }
     public bool Stackable { get; protected set; }
 
@@ -103,7 +109,7 @@ public class Weapon : Item
 
 public class Armor : Item
 {
-    public ArmorType armorType { get; private set; }
+    public ArmorType ArmorType { get; private set; }
     public int Defence { get; private set; }
 
     public Armor(int templateId) : base(ItemType.Armor)
@@ -122,7 +128,7 @@ public class Armor : Item
         {
             TemplateId = data.id;
             Count = 1;
-            armorType = data.armorType;
+            ArmorType = data.armorType;
             Defence = data.defence;
             Stackable = false;
         }

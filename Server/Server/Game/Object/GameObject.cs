@@ -18,7 +18,10 @@ namespace Server.Game
 		public PositionInfo PosInfo { get; private set; } = new PositionInfo();
 		public StatInfo Stat { get; private set; } = new StatInfo();
 
-		public float Speed
+		public virtual int TotalAttack { get { return Stat.Attack; } }
+		public virtual int TotalDefence { get { return 0; } }
+
+        public float Speed
 		{
 			get { return Stat.Speed; }
 			set { Stat.Speed = value; }
@@ -114,12 +117,13 @@ namespace Server.Game
             if (Room == null)
                 return;
 
+			damage = Math.Max(damage - TotalDefence, 0);
             Stat.Hp = Math.Max(Stat.Hp - damage, 0);
 
             S_ChangeHp changePacket = new S_ChangeHp();
             changePacket.ObjectId = Id;
             changePacket.Hp = Stat.Hp;
-            Room.Broadcast(changePacket);
+            Room.Broadcast(CellPos, changePacket);
 
             if (Stat.Hp <= 0)
             {
@@ -135,7 +139,7 @@ namespace Server.Game
             S_Die diePacket = new S_Die();
             diePacket.ObjectId = Id;
             diePacket.AttackerId = attacker.Id;
-            Room.Broadcast(diePacket);
+            Room.Broadcast(CellPos, diePacket);
 
             GameRoom room = Room;
             room.LeaveGame(Id);
@@ -146,7 +150,7 @@ namespace Server.Game
             PosInfo.PosX = 0;
             PosInfo.PosY = 0;
 
-            room.EnterGame(this);
+            room.EnterGame(this, true);
         }
 
         public virtual GameObject GetOwner()

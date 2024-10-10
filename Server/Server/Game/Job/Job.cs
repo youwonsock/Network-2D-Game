@@ -2,10 +2,11 @@
 
 namespace Server.Game
 {
-	public interface IJob
+	public abstract class IJob
 	{
-		void Execute();
-	}
+		public abstract void Execute();
+        public bool Cancel { get; set; } = false;
+    }
 
 	public class Job : IJob
 	{
@@ -16,9 +17,10 @@ namespace Server.Game
 			this.action = action;
 		}
 
-		public void Execute()
+		public override void Execute()
 		{
-			action.Invoke();
+			if(Cancel == false)	
+				action.Invoke();
 		}
 	}
 
@@ -33,9 +35,10 @@ namespace Server.Game
 			this.t1 = t1;
 		}
 
-		public void Execute()
-		{
-			action.Invoke(t1);
+		public override void Execute()
+        {
+            if (Cancel == false)
+                action.Invoke(t1);
 		}
 	}
 
@@ -52,9 +55,10 @@ namespace Server.Game
 			this.t2 = t2;
 		}
 
-		public void Execute()
-		{
-			action.Invoke(t1, t2);
+		public override void Execute()
+        {
+            if (Cancel == false)
+                action.Invoke(t1, t2);
 		}
 	}
 
@@ -73,9 +77,10 @@ namespace Server.Game
 			this.t3 = t3;
 		}
 
-		public void Execute()
-		{
-			action.Invoke(t1, t2, t3);
+		public override void Execute()
+        {
+            if (Cancel == false)
+                action.Invoke(t1, t2, t3);
 		}
 	}
 }

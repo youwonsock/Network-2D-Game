@@ -6,23 +6,23 @@ namespace Server.Game
 {
     public class Inventory
     {
-        Dictionary<int, Item> items = new Dictionary<int, Item>();
+        public Dictionary<int, Item> Items = new Dictionary<int, Item>();
 
         public void Add(Item item)
         {
-            items.Add(item.ItemDbId, item);
+            Items.Add(item.ItemDbId, item);
         }
 
         public Item Get(int ItemDbId)
         {
             Item item = null;
-            items.TryGetValue(ItemDbId, out item);
+            Items.TryGetValue(ItemDbId, out item);
             return item;
         }
 
         public Item Find(Func<Item, bool> condition)
         {
-            foreach (var item in items.Values)
+            foreach (var item in Items.Values)
             {
                 if (condition.Invoke(item))
                     return item;
@@ -35,7 +35,7 @@ namespace Server.Game
         {
             for (int slot = 0; slot < 20; slot++)
             {
-                Item item = items.Values.FirstOrDefault(i => i.Slot == slot);
+                Item item = Items.Values.FirstOrDefault(i => i.Slot == slot);
                 if (item == null)
                     return slot;
             }

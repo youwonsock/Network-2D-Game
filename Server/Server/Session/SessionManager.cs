@@ -1,5 +1,7 @@
-﻿using System;
+﻿using ServerCore;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Server
 {
@@ -13,8 +15,19 @@ namespace Server
 		object lockObj = new object();
 
 
+        public List<ClientSession> GetSessions()
+        {
+            List<ClientSession> sessions = new List<ClientSession>();
 
-		public ClientSession Generate()
+            lock (lockObj)
+            {
+                sessions = this.sessions.Values.ToList();
+            }
+
+            return sessions;
+        }
+
+        public ClientSession Generate()
 		{
 			lock (lockObj)
 			{

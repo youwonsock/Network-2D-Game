@@ -32,8 +32,11 @@ public class UI_Inventory : UI_Base
 		{
 			if(item.Slot < 0 || item.Slot >= 20)
 				continue;
+			
+			Debug.Log($"RefreshUI: {item.Slot}");
 
-			Items[item.Slot].SetItem(item.TemplateId, item.Count);
+
+            Items[item.Slot].SetItem(item);
         }
     }
 }

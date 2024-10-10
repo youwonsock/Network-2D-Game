@@ -20,8 +20,6 @@ namespace Server
 
         public void HandleLogin(C_Login loginPacket)
         {
-            Console.WriteLine($"C_LoginHandler : {loginPacket.UniqueId}");
-
             if(ServerState != PlayerServerState.ServerStateLogin)
                 return;
 
@@ -47,7 +45,7 @@ namespace Server
                             StatInfo = new StatInfo()
                             {
                                 Level = playerDb.Level,
-                                Hp = playerDb.Hp,
+                                Hp = playerDb.MaxHp,
                                 MaxHp = playerDb.MaxHp,
                                 Attack = playerDb.Attack,
                                 Speed = playerDb.Speed,
@@ -129,8 +127,11 @@ namespace Server
 
             ServerState = PlayerServerState.ServerStateGame;
 
-            GameRoom room = RoomManager.Instance.Find(1);
-            room.Push(room.EnterGame, MyPlayer);
+            GameLogic.Instance.Push(() =>
+            {
+                GameRoom room = GameLogic.Instance.Find(1);
+                room.Push(room.EnterGame, MyPlayer, true);
+            });
         }
 
         public void HandleCreatePlayer(C_CreatePlayer createPlayer)
@@ -156,7 +157,7 @@ namespace Server
                     {
                         PlayerName = createPlayer.Name,
                         Level = statInfo.Level,
-                        Hp = statInfo.Hp,
+                        Hp = statInfo.Hp <= 0 ? statInfo.MaxHp : statInfo.Hp,
                         MaxHp = statInfo.MaxHp,
                         Attack = statInfo.Attack,
                         Speed = statInfo.Speed,
@@ -176,7 +177,7 @@ namespace Server
                         StatInfo = new StatInfo()
                         {
                             Level = newPlayer.Level,
-                            Hp = newPlayer.Hp,
+                            Hp = statInfo.Hp <= 0 ? statInfo.MaxHp : statInfo.Hp,
                             MaxHp = newPlayer.MaxHp,
                             Attack = newPlayer.Attack,
                             Speed = newPlayer.Speed,

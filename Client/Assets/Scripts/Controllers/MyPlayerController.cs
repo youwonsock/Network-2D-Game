@@ -7,9 +7,12 @@ public class MyPlayerController : PlayerController
 	private bool moveKeyPressed = false;
 	private Coroutine coSkillCooltime;
 
+	public int WeaponDamage { get; private set; }
+	public int ArmorDefence { get; private set; }
 
 
-	protected override void Init()
+
+    protected override void Init()
 	{
 		base.Init();
 	}
@@ -40,7 +43,7 @@ public class MyPlayerController : PlayerController
 			return;
 		}
 
-		if (coSkillCooltime == null && Input.GetKey(KeyCode.Space))
+		if (coSkillCooltime == null && Input.GetKeyDown(KeyCode.Space))
 		{
 			Debug.Log("Skill !");
 
@@ -78,6 +81,21 @@ public class MyPlayerController : PlayerController
             {
                 invenUI.gameObject.SetActive(true);
                 invenUI.RefreshUI();
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.C))
+        {
+            UI_GameScene gameSceneUI = Managers.UI.SceneUI as UI_GameScene;
+            UI_Stat statUI = gameSceneUI.StatUI;
+
+            if (statUI.gameObject.activeSelf)
+            {
+                statUI.gameObject.SetActive(false);
+            }
+            else
+            {
+                statUI.gameObject.SetActive(true);
+                statUI.RefreshUI();
             }
         }
     }
@@ -156,4 +174,28 @@ public class MyPlayerController : PlayerController
 			updated = false;
 		}
 	}
+
+	public void RefreshAdditionalStat()
+    {
+        WeaponDamage = 0;
+        ArmorDefence = 0;
+
+		foreach (Item item in Managers.Inven.Items.Values)
+		{
+			if (item.Equipped == false)
+				continue;
+
+			switch (item.ItemType)
+			{
+				case ItemType.Weapon:
+					Weapon weapon = item as Weapon;
+					WeaponDamage += weapon.Damage;
+					break;
+				case ItemType.Armor:
+					Armor armor = item as Armor;
+					ArmorDefence += armor.Defence;
+					break;
+			}
+		}
+    }
 }

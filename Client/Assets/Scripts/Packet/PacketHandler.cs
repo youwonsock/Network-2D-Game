@@ -20,6 +20,7 @@ class PacketHandler
     public static void S_SpawnHandler(PacketSession session, IMessage packet)
     {
         S_Spawn spawnPacket = packet as S_Spawn;
+
         foreach (ObjectInfo obj in spawnPacket.Objects)
         {
             Managers.Object.Add(obj, myPlayer: false);
@@ -29,6 +30,7 @@ class PacketHandler
     public static void S_DespawnHandler(PacketSession session, IMessage packet)
     {
         S_Despawn despawnPacket = packet as S_Despawn;
+
         foreach (int id in despawnPacket.ObjectIds)
         {
             Managers.Object.Remove(id);
@@ -103,7 +105,9 @@ class PacketHandler
     {
         Debug.Log("S_ConnectedHandler");
         C_Login loginPacket = new C_Login();
-        loginPacket.UniqueId = SystemInfo.deviceUniqueIdentifier;
+
+        string path = Application.dataPath;
+        loginPacket.UniqueId = path.GetHashCode().ToString();
         Managers.Network.Send(loginPacket);
     }
 
@@ -156,6 +160,9 @@ class PacketHandler
             Item item = Item.MakeItem(itemInfo);
             Managers.Inven.Add(item);
         }
+
+        if (Managers.Object.MyPlayer != null)
+            Managers.Object.MyPlayer.RefreshAdditionalStat();
     }
 
     public static void S_AddItemHandler(PacketSession session, IMessage packet)
@@ -163,7 +170,8 @@ class PacketHandler
         S_AddItem itemList = (S_AddItem)packet;
 
         UI_GameScene gameSceneUI = Managers.UI.SceneUI as UI_GameScene;
-        UI_Inventory invenUI = gameSceneUI.InvenUI;
+        gameSceneUI.InvenUI.RefreshUI();
+        gameSceneUI.StatUI.RefreshUI();
 
         foreach (ItemInfo itemInfo in itemList.Items)
         {
@@ -171,7 +179,39 @@ class PacketHandler
             Managers.Inven.Add(item);
         }
 
-        Debug.Log("아이템을 획득했습니다!");
+        if(Managers.Object.MyPlayer != null)
+            Managers.Object.MyPlayer.RefreshAdditionalStat();
+    }
+
+    public static void S_EquipItemHandler(PacketSession session, IMessage packet)
+    {
+        S_EquipItem equipItem = (S_EquipItem)packet;
+
+        Item item = Managers.Inven.Get(equipItem.ItemDbId);
+        if (item == null)
+            return;
+
+        item.Equipped = equipItem.Equipped;
+
+        UI_GameScene gameSceneUI = Managers.UI.SceneUI as UI_GameScene;
+        gameSceneUI.InvenUI.RefreshUI();
+        gameSceneUI.StatUI.RefreshUI();
+
+
+        if (Managers.Object.MyPlayer != null)
+            Managers.Object.MyPlayer.RefreshAdditionalStat();
+    }
+
+    public static void S_ChangeStatHandler(PacketSession session, IMessage packet)
+    {
+        S_ChangeStat changeStat = (S_ChangeStat)packet;
+
+    }
+
+    public static void S_PingHandler(PacketSession session, IMessage packet)
+    {
+        C_Pong pongPacket = new C_Pong();
+        Managers.Network.Send(pongPacket);
     }
 }
 
