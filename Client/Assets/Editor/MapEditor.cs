@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.IO;
 
@@ -12,8 +10,6 @@ public class MapEditor
 {
 
 #if UNITY_EDITOR
-
-	// % (Ctrl), # (Shift), & (Alt)
 
 	[MenuItem("Tools/GenerateMap %#g")]
 	private static void GenerateMap()

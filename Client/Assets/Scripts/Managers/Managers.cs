@@ -2,8 +2,8 @@
 
 public class Managers : MonoBehaviour
 {
-    static Managers instance; // 유일성이 보장된다
-    public static Managers Instance { get { Init(); return instance; } } // 유일한 매니저를 갖고온다
+    static Managers instance; 
+    public static Managers Instance { get { Init(); return instance; } } 
 
     #region Contents
     InventoryManager inven = new InventoryManager();

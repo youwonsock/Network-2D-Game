@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class InventoryManager : MonoBehaviour
@@ -17,17 +15,6 @@ public class InventoryManager : MonoBehaviour
         Item item = null;
         Items.TryGetValue(ItemDbId, out item);
         return item;
-    }
-
-    public Item Find(Func<Item, bool> condition)
-    {
-        foreach (var item in Items.Values)
-        {
-            if (condition.Invoke(item))
-                return item;
-        }
-
-        return null;
     }
 
     public void Clear()

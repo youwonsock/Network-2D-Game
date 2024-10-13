@@ -1,10 +1,7 @@
 ﻿using Google.Protobuf.Protocol;
-using UnityEngine;
 
 public class MonsterController : CreatureController
 {
-	Coroutine _coSkill;
-
 	protected override void Init()
 	{
 		base.Init();
@@ -13,12 +10,6 @@ public class MonsterController : CreatureController
 	protected override void UpdateIdle()
 	{
 		base.UpdateIdle();
-	}
-
-	public override void OnDamaged()
-	{
-		//Managers.Object.Remove(Id);
-		//Managers.Resource.Destroy(gameObject);
 	}
 
 	public override void UseSkill(int skillId)

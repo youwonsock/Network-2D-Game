@@ -132,9 +132,4 @@ public class PlayerController : CreatureController
 		coSkill = null;
 		CheckUpdatedFlag();
 	}
-
-	public override void OnDamaged()
-	{
-		//Debug.Log("Player HIT !");
-	}
 }
