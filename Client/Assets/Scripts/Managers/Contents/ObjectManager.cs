@@ -112,17 +112,6 @@ public class ObjectManager
 		return null;
 	}
 
-	public GameObject Find(Func<GameObject, bool> condition)
-	{
-		foreach (GameObject obj in objects.Values)
-		{
-			if (condition.Invoke(obj))
-				return obj;
-		}
-
-		return null;
-	}
-
 	public void Clear()
 	{
 		foreach (GameObject obj in objects.Values)

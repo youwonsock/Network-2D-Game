@@ -7,15 +7,14 @@ namespace ServerCore
 {
 	public class Connector
 	{
-		Func<Session> _sessionFactory;
+		Func<Session> sessionFactory;
 
 		public void Connect(IPEndPoint endPoint, Func<Session> sessionFactory, int count = 1)
 		{
 			for (int i = 0; i < count; i++)
 			{
-				// 휴대폰 설정
 				Socket socket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-				_sessionFactory = sessionFactory;
+				this.sessionFactory = sessionFactory;
 
 				SocketAsyncEventArgs args = new SocketAsyncEventArgs();
 				args.Completed += OnConnectCompleted;
@@ -41,7 +40,7 @@ namespace ServerCore
 		{
 			if (args.SocketError == SocketError.Success)
 			{
-				Session session = _sessionFactory.Invoke();
+				Session session = sessionFactory.Invoke();
 				session.Start(args.ConnectSocket);
 				session.OnConnected(args.RemoteEndPoint);
 			}
