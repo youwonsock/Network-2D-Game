@@ -3,18 +3,20 @@
 public class Managers : MonoBehaviour
 {
     static Managers instance; // 유일성이 보장된다
-    static Managers Instance { get { Init(); return instance; } } // 유일한 매니저를 갖고온다
+    public static Managers Instance { get { Init(); return instance; } } // 유일한 매니저를 갖고온다
 
     #region Contents
     InventoryManager inven = new InventoryManager();
     MapManager map = new MapManager();
     ObjectManager obj = new ObjectManager();
     NetworkManager network = new NetworkManager();
+    WebManager web = new WebManager();
 
     public static InventoryManager Inven { get { return Instance.inven; } }
     public static MapManager Map { get { return Instance.map; } }
     public static ObjectManager Object { get { return Instance.obj; } }
     public static NetworkManager Network { get { return Instance.network; } }
+    public static WebManager Web { get { return Instance.web; } }
 	#endregion
 
 	#region Core
@@ -51,7 +53,6 @@ public class Managers : MonoBehaviour
             DontDestroyOnLoad(go);
             instance = go.GetComponent<Managers>();
 
-            instance.network.Init();
             instance.data.Init();
         }		
 	}
