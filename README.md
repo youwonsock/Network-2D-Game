@@ -28,85 +28,85 @@
 ASP web server를 사용해 로그인 서버를 제작하였습니다.  
 AccountServer는 Client로부터 계정 생성 및 로그인 요청을 받아 DB의 계정 정보와 비교하여 결과를 반환합니다.
 
- <details>
-    <summary>AccountServer/Controllers/AccountController.cs</summary>
-    <div markdown="1">
+<details>
+<summary>AccountServer/Controllers/AccountController.cs</summary>
+<div markdown="1">
 
-      ```c#
+```c#
 
-        [Route("api/[controller]")]
-        [ApiController]
-        public class AccountController : ControllerBase
-        {
-            AppDbContext context;
+  [Route("api/[controller]")]
+  [ApiController]
+  public class AccountController : ControllerBase
+  {
+      AppDbContext context;
+  
+      public AccountController(AppDbContext context)
+      {
+          this.context = context;
+      }
+  
+      [HttpPost]
+      [Route("create")]
+      public CreateAccountPacketRes CreateAccount([FromBody] CreateAccountPacketReq req)
+      {
+          CreateAccountPacketRes res = new CreateAccountPacketRes();
+  
+          AccountDb account = context.Accounts
+                                  .AsNoTracking()
+                                  .Where(a => a.AccountName == req.AccountName)
+                                  .FirstOrDefault();
+  
+          if (account == null)
+          {
+              context.Accounts.Add(new AccountDb
+              {
+                  AccountName = req.AccountName,
+                  Password = req.Password
+              });
+  
+              bool success = context.SaveChangesEx();
+              res.Success = success;
+          }
+          else
+          {
+              res.Success = false;
+          }
+  
+          return res;
+      }
+  
+      [HttpPost]
+      [Route("login")]
+      public LoginAccountPacketRes LoginAccount([FromBody] LoginAccountPacketReq req)
+      {
+          LoginAccountPacketRes res = new LoginAccountPacketRes();
+  
+          AccountDb account = context.Accounts
+                                  .AsNoTracking()
+                                  .Where(a => a.AccountName == req.AccountName && a.Password == req.Password)
+                                  .FirstOrDefault();
+  
+          if (account == null)
+          {
+              res.Success = false;
+          }
+          else
+          {
+              res.Success = true;
+          }
+  
+          return res;
+      }
+  }
 
-            public AccountController(AppDbContext context)
-            {
-                this.context = context;
-            }
+```
 
-            [HttpPost]
-            [Route("create")]
-            public CreateAccountPacketRes CreateAccount([FromBody] CreateAccountPacketReq req)
-            {
-                CreateAccountPacketRes res = new CreateAccountPacketRes();
-
-                AccountDb account = context.Accounts
-                                        .AsNoTracking()
-                                        .Where(a => a.AccountName == req.AccountName)
-                                        .FirstOrDefault();
-
-                if (account == null)
-                {
-                    context.Accounts.Add(new AccountDb
-                    {
-                        AccountName = req.AccountName,
-                        Password = req.Password
-                    });
-
-                    bool success = context.SaveChangesEx();
-                    res.Success = success;
-                }
-                else
-                {
-                    res.Success = false;
-                }
-
-                return res;
-            }
-
-            [HttpPost]
-            [Route("login")]
-            public LoginAccountPacketRes LoginAccount([FromBody] LoginAccountPacketReq req)
-            {
-                LoginAccountPacketRes res = new LoginAccountPacketRes();
-
-                AccountDb account = context.Accounts
-                                        .AsNoTracking()
-                                        .Where(a => a.AccountName == req.AccountName && a.Password == req.Password)
-                                        .FirstOrDefault();
-
-                if (account == null)
-                {
-                    res.Success = false;
-                }
-                else
-                {
-                    res.Success = true;
-                }
-
-                return res;
-            }
-        }
-
-      ```
-      
-    </div>
+</div>
 </details>
 
  <details>
-    <summary>Client/UI/Scene/UI_LoginScene.cs</summary>
-    <div markdown="1">
+<summary>Client/UI/Scene/UI_LoginScene.cs</summary>
+<div markdown="1">
 
       ```c#
 
